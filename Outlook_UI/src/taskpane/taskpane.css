@@ -1,0 +1,458 @@
+/* ═══════════════════════════════════════════════
+   DIVA ADD-IN — Fluent UI Light
+   Palette : blanc / gris Outlook × bleu Microsoft
+   Police  : Segoe UI (identique à Outlook)
+   Layout  : 3 zones fixes, zéro scroll
+═══════════════════════════════════════════════ */
+
+/* ── Variables Fluent UI ── */
+:root {
+  /* Fonds — identiques à Outlook */
+  --bg-canvas:    #f5f5f5;
+  --bg-surface:   #ffffff;
+  --bg-subtle:    #fafafa;
+  --bg-hover:     #f0f6ff;
+  --bg-pressed:   #e3eefb;
+
+  /* Bleu Microsoft / Fluent */
+  --blue-700:     #004578;
+  --blue-600:     #005a9e;
+  --blue-500:     #0078d4;
+  --blue-400:     #106ebe;
+  --blue-300:     #2b88d8;
+  --blue-200:     #71afe5;
+  --blue-100:     #c7e0f4;
+  --blue-50:      #eff6fc;
+
+  /* Texte — échelle Fluent */
+  --text-pri:     #201f1e;
+  --text-sec:     #605e5c;
+  --text-dim:     #a19f9d;
+  --text-accent:  #0078d4;
+  --text-onblue:  #ffffff;
+
+  /* Bordures */
+  --border:       #edebe9;
+  --border-mid:   #d2d0ce;
+  --border-accent:#0078d4;
+
+  /* États */
+  --green:        #107c10;
+  --red:          #d13438;
+
+  /* Géométrie Fluent */
+  --radius-sm:    4px;
+  --radius-md:    6px;
+  --radius-lg:    8px;
+
+  /* Typographie */
+  --font-ui:   'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', monospace;
+
+  /* Hauteurs */
+  --header-h:  60px;
+  --footer-h:  36px;
+
+  /* Ombres légères Fluent */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Root layout — NO SCROLL ── */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-canvas);
+  color: var(--text-pri);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ════════════════════════════════════════
+   ZONE 1 — HEADER
+════════════════════════════════════════ */
+.header {
+  height: var(--header-h);
+  min-height: var(--header-h);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-mid);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--blue-500);
+  opacity: 0.18;
+}
+
+/* Marque */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--blue-500);
+}
+
+.brand-mark { display: flex; align-items: center; }
+
+.brand-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--blue-600);
+}
+
+.header-brand::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 20px;
+  background: var(--border-mid);
+  margin-left: 2px;
+}
+
+/* Utilisateur */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-onblue);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-pri);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email {
+  font-size: 11px;
+  color: var(--text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.pulse-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* ════════════════════════════════════════
+   ZONE 2 — MAIN
+════════════════════════════════════════ */
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 8px;
+  background: var(--bg-canvas);
+}
+
+/* ── Carte email ── */
+.email-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue-500);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px 10px 14px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.email-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.email-subject {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-pri);
+  line-height: 1.35;
+  margin-bottom: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.email-meta-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.meta-key {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+
+.meta-val {
+  font-size: 12px;
+  color: var(--text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Section actions ── */
+.actions-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.actions-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+/* ── Boutons  */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
+  box-shadow: var(--shadow-sm);
+}
+
+.action-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--blue-200);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn:active {
+  background: var(--bg-pressed);
+  border-color: var(--blue-300);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+/* Icône */
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--blue-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue-500);
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.action-btn:hover .btn-icon {
+  background: var(--blue-100);
+  color: var(--blue-600);
+}
+
+/* Texte bouton */
+.btn-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.btn-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-pri);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.btn-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.action-btn:hover .btn-code {
+  color: var(--text-accent);
+}
+
+/* Chevron */
+.btn-arrow {
+  font-size: 16px;
+  color: var(--text-dim);
+  line-height: 1;
+  transition: color 0.1s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.action-btn:hover .btn-arrow {
+  color: var(--blue-500);
+  transform: translateX(2px);
+}
+
+/* ════════════════════════════════════════
+   ZONE 3 — FOOTER (barre de statut Outlook)
+════════════════════════════════════════ */
+.footer {
+  height: var(--footer-h);
+  min-height: var(--footer-h);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-mid);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.status-indicator.ready   { background: var(--green); }
+.status-indicator.loading { background: #f59e0b; animation: blink 1s ease-in-out infinite; }
+.status-indicator.error   { background: var(--red); }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.status-text {
+  font-size: 11px;
+  color: var(--text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.footer-version,
+.footer-brand {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.footer-sep {
+  color: var(--border-mid);
+  font-size: 11px;
+}

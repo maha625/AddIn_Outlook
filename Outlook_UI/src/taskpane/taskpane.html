@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diva Add-in</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="taskpane.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════
+       ZONE 1 — HEADER : identité utilisateur
+  ═══════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+          <rect x="1" y="1" width="9" height="9" rx="2" fill="currentColor" opacity="0.9" />
+          <rect x="12" y="1" width="9" height="9" rx="2" fill="currentColor" opacity="0.4" />
+          <rect x="1" y="12" width="9" height="9" rx="2" fill="currentColor" opacity="0.4" />
+          <rect x="12" y="12" width="9" height="9" rx="2" fill="currentColor" opacity="0.9" />
+        </svg>
+      </div>
+      <span class="brand-name">DIVA</span>
+    </div>
+
+    <div class="header-user">
+      <div class="user-avatar" id="user-avatar">—</div>
+      <div class="user-details">
+        <span class="user-name" id="user-name">Chargement…</span>
+        <span class="user-email" id="user-email"></span>
+      </div>
+    </div>
+
+
+  </header>
+
+  <!-- ═══════════════════════════════════════
+       ZONE 2 — MAIN : email + actions
+  ═══════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Carte email actif -->
+    <section class="email-card">
+      <div class="email-card-label">Email actif</div>
+      <div class="email-subject" id="email-subject">—</div>
+      <div class="email-meta">
+        <div class="email-meta-item">
+          <span class="meta-key">De</span>
+          <span class="meta-val" id="sender-email">—</span>
+        </div>
+    </section>
+
+    <!-- Boutons d'actions métier -->
+    <section class="actions-section">
+      <div class="actions-label">Créer un événement</div>
+      <div class="actions-grid" id="actions">
+        
+        <!-- Historique des évènements -->
+        <button class="action-btn" data-action="historique" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+              <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <span class="btn-title">Historique des évènements</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+        <!-- Évènement SAV -->
+        <button class="action-btn" data-action="sav" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6" />
+              <path d="M3 20c0-3 2.5-5 6-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <circle cx="17" cy="16" r="5" stroke="currentColor" stroke-width="1.6" />
+              <path d="M17 13v3l2 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </div>
+          <span class="btn-title">Évènement SAV</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+        <!-- Évènement Négoce -->
+        <button class="action-btn" data-action="negoce" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+              <path d="M12 7v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M9 9h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M9 15h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <span class="btn-title">Évènement Négoce</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+        <!-- Entrée de demande de prix -->
+        <button class="action-btn" data-action="demande-prix" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4" />
+              <path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <span class="btn-title">Entrée de demande de prix</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+        <!-- Entrée de commande -->
+        <button class="action-btn" data-action="commande" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M2 2h1.5l2 7h7l1.5-5H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <circle cx="6.5" cy="13" r="1" fill="currentColor" />
+              <circle cx="11.5" cy="13" r="1" fill="currentColor" />
+            </svg>
+          </div>
+          <span class="btn-title">Entrée de commande</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+        <!-- Demande d'information -->
+        <button class="action-btn" data-action="info" onclick="handleAction(this)">
+          <div class="btn-icon">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" />
+              <path d="M8 7v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <circle cx="8" cy="5" r="0.8" fill="currentColor" />
+            </svg>
+          </div>
+          <span class="btn-title">Demande d'information</span>
+          <span class="btn-arrow">›</span>
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       ZONE 3 — FOOTER : statut système
+  ═══════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="status-bar">
+      <div class="status-indicator" id="status-indicator"></div>
+      <span class="status-text" id="status">Initialisation…</span>
+    </div>
+    <div class="footer-meta">
+      <span class="footer-brand">Diva Easy</span>
+    </div>
+  </footer>
+
+  <script src="taskpane.ts"></script>
+</body>
+
+</html>
