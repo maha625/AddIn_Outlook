@@ -2,7 +2,7 @@
 $host = "localhost";
 $dbname = "addin_outlook";
 $username = "root";
-$password = "1234";
+$password = "mysql";
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

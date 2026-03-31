@@ -1,0 +1,1 @@
+export const API_BACK_URL = process.env.REACT_APP_API_BACK_URL;

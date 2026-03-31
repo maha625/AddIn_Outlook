@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./Add_clients.css";
+import { API_BACK_URL } from "../config/config";
 
 function AddClient() {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ function AddClient() {
     try {
       // Axios gère automatiquement le JSON.stringify si on lui passe l'objet directement
       const res = await axios.post(
-        "http://localhost/backend/authentification/createClient.php",
+        `${API_BACK_URL}/createClient.php`,
         formData, 
         { headers: { "Content-Type": "application/json" } }
       );

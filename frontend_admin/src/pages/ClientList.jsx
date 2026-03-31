@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./ClientList.css";
+import { API_BACK_URL } from "../config/config";
 
 function ClientList() {
   const [clients, setClients] = useState([]);
@@ -12,7 +13,7 @@ function ClientList() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await axios.get("http://localhost/backend/authentification/getClients.php");
+       const res = await axios.get(`${API_BACK_URL}/getClients.php`);
         setClients(Array.isArray(res.data) ? res.data : []);
         setLoading(false);
       } catch (error) {
