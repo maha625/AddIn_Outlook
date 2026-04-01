@@ -1,5 +1,8 @@
 <?php
-include "backend_admin\db.php";
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
+include(__DIR__ . "/../../backend_admin/db.php");
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -19,7 +22,7 @@ $stmt->execute([$domain]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
-    echo json_encode(["error" => "Entreprise non reconnue"]);
+    echo json_encode(["error" => "Utilisateur non reconnu"]);
     exit;
 }
 
@@ -34,7 +37,7 @@ $updateStmt->execute([$session_token, $user['id']]);
 // 3. Réponse SANS exposer API KEY
 echo json_encode([
     "success" => true,
-    "message" => "Entreprise reconnue",
+    "message" => "Utilisateur reconnu",
     "user" => [
         "id" => $user["id"],
         "domain" => $user["domain"],
