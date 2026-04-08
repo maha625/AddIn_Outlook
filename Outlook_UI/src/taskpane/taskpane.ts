@@ -10,7 +10,7 @@ const ACTION_MAP: Record<string, { label: string }> = {
 // ─────────────────────────────────────────────
 //  CONFIG
 // ─────────────────────────────────────────────
-const API_BASE_URL = "http://localhost/backend/backend_addIn"; // ← à adapter
+const API_BASE_URL = "http://localhost:8000"; // ← à adapter
 
 // ─────────────────────────────────────────────
 //  INIT
