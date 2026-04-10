@@ -39,6 +39,7 @@ $apiKey = $client['dolibarr_api_key'];
 
 // 3. Préparer l'événement pour l'Agenda Dolibarr
 $event_data = [
+    "userownerid" => 1,
     "label" => "DEMANDE INFO : " . $subject,
     "type_code" => "AC_OTH", // Type d'action (Autre)
     "code" => "AC_OTH",

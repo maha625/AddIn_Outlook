@@ -223,23 +223,46 @@ function displayNoEmail(): void {
 // ─────────────────────────────────────────────
 //  ACTION — clic bouton
 // ─────────────────────────────────────────────
-(window as any).handleAction = function (btn: HTMLButtonElement): void {
+(window as any).handleAction = async function (btn: HTMLButtonElement): Promise<void> {
   const actionKey = btn.getAttribute("data-action") || "";
   const action = ACTION_MAP[actionKey];
+  const sessionToken = (window as any).__divaSessionToken;
+  const emailInfo = getEmailInfo();
 
-  if (!action) {
-    console.warn("[Diva] Action inconnue :", actionKey);
+  if (!action || !sessionToken) {
+    console.error("Action ou Session manquante");
     return;
   }
 
-  console.log(`[Diva] Action : "${action.label}"`);
-  setStatus("loading", `${action.label}…`);
+  // Récupérer le vrai corps de l'email
+  Office.context.mailbox.item.body.getAsync(Office.CoercionType.Text, async (result) => {
+    if (result.status === Office.AsyncResultStatus.Succeeded) {
+      const payload = {
+        session_token: sessionToken,
+        sender_email: emailInfo?.senderEmail,
+        subject: emailInfo?.subject,
+        email_body: result.value, // Le vrai texte de l'email
+        action_label: action.label
+      };
 
-  setTimeout(() => {
-    setStatus("ready", "Email prêt à traiter");
-  }, 3000);
+      try {
+        const response = await fetch(`${API_BASE_URL}/evenement/create_event.php`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          console.log("Événement créé avec succès !");
+          // Tu peux ajouter une notification visuelle ici
+        }
+      } catch (err) {
+        console.error("Erreur lors de l'envoi :", err);
+      }
+    }
+  });
 };
-
 // ─────────────────────────────────────────────
 //  STATUT
 // ─────────────────────────────────────────────

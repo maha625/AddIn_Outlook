@@ -39,8 +39,8 @@ function Dashboard() {
           <div className="icon-box orange">
             <i className="fas fa-chart-line"></i>
           </div>
-          <h3>Statistiques</h3>
-          <p>Bientôt : Visualisez l'activité des connexions par domaine.</p>
+          <h3>Modifier les clients</h3>
+          <p>Bientôt : Modifier les informations d'un client.</p>
           <span className="badge">Bientôt</span>
         </div>
       </div>
