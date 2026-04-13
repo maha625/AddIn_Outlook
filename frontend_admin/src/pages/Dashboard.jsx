@@ -1,51 +1,121 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_BACK_URL } from "../config/config";
 import "./Dashboard.css";
 
-
-function Dashboard() {
+// Import d'icônes si tu en as (ex: lucide-react ou font-awesome), 
+// sinon on utilise des emojis pour la démo.
+export default function Dashboard() {
+  const [stats, setStats] = useState({
+    total: 0,
+    recent: [],
+    lastAdded: ""
+  });
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const res = await axios.get(`${API_BACK_URL}/getClients.php`);
+        const data = Array.isArray(res.data) ? res.data : [];
+        
+        setStats({
+          total: data.length,
+          recent: data.slice(-5).reverse(), // Les 5 derniers ajoutés
+          lastAdded: data.length > 0 ? data[data.length - 1].domain : "Aucun"
+        });
+        setLoading(false);
+      } catch (error) {
+        console.error("Erreur Dashboard:", error);
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  if (loading) return <div className="loader">Initialisation du panel...</div>;
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Administration Add-in Outlook</h1>
-        <p>Bienvenue dans votre interface de gestion des clients</p>
-      </header>
+      <div className="dashboard-header">
+        <h1>Tableau de Bord</h1>
+        <p>Bienvenue, voici l'état de vos intégrations Dolibarr.</p>
+      </div>
 
-      <div className="dashboard-grid">
-        {/* Carte Ajouter un Client */}
-        <div className="dash-card" onClick={() => navigate("/add-client")}>
-          <div className="icon-box blue">
-            <i className="fas fa-user-plus"></i>
+      {/* Section des KPIs */}
+      <div className="stats-grid">
+        <div className="stat-card blue">
+          <div className="stat-icon">👥</div>
+          <div className="stat-info">
+            <span className="stat-label">Total Clients</span>
+            <span className="stat-value">{stats.total}</span>
           </div>
-          <h3>Ajouter un Client</h3>
-          <p>Enregistrer une nouvelle entreprise et configurer ses accès Dolibarr.</p>
-          <button className="dash-btn">Y aller</button>
         </div>
 
-        {/* Carte Liste des Clients */}
-        <div className="dash-card" onClick={() => navigate("/clients")}>
-          <div className="icon-box green">
-            <i className="fas fa-users"></i>
+        <div className="stat-card green">
+          <div className="stat-icon">✨</div>
+          <div className="stat-info">
+            <span className="stat-label">Dernier Client</span>
+            <span className="stat-value">{stats.lastAdded}</span>
           </div>
-          <h3>Afficher les Clients</h3>
-          <p>Consulter, vérifier les domaines et gérer les clients existants.</p>
-          <button className="dash-btn">Consulter</button>
         </div>
-        
-        {/* Optionnel : Statistiques ou Logs */}
-        <div className="dash-card disabled">
-          <div className="icon-box orange">
-            <i className="fas fa-chart-line"></i>
+
+        <div className="stat-card purple">
+          <div className="stat-icon">🔗</div>
+          <div className="stat-info">
+            <span className="stat-label">Status API</span>
+            <span className="stat-value">Opérationnel</span>
           </div>
-          <h3>Statistiques</h3>
-          <p>Bientôt : Visualisez l'activité des connexions par domaine.</p>
-          <span className="badge">Bientôt</span>
+        </div>
+      </div>
+
+      <div className="dashboard-content">
+        {/* Liste des clients récents */}
+        <div className="recent-section">
+          <div className="section-header">
+            <h3>Ajouts récents</h3>
+            <button onClick={() => navigate("/clients")} className="view-all-btn">
+              Voir tout
+            </button>
+          </div>
+          <div className="mini-table-wrapper">
+            <table className="mini-table">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>N° Site</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recent.map((client) => (
+                  <tr key={client.id}>
+                    <td className="client-cell">
+                      <img src={client.logo} alt="" className="tiny-logo" />
+                      {client.domain}
+                    </td>
+                    <td>{client.site_number}</td>
+                    <td>{new Date(client.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Actions Rapides */}
+        <div className="actions-section">
+          <h3>Actions rapides</h3>
+          <div className="action-buttons">
+            <button className="action-btn primary" onClick={() => navigate("/add-client")}>
+              <span>+</span> Nouveau Client
+            </button>
+            
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default Dashboard;

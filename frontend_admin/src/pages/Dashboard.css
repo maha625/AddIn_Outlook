@@ -1,103 +1,174 @@
 .dashboard-container {
-  padding: 40px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: 'Inter', sans-serif;
+  padding: 2rem;
   background-color: #f8fafc;
   min-height: 100vh;
+  margin-left: 250px;
 }
 
 .dashboard-header {
-  text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 2rem;
 }
 
 .dashboard-header h1 {
+  font-size: 2rem;
   color: #1e293b;
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
 .dashboard-header p {
   color: #64748b;
+  margin-top: 0.5rem;
 }
 
-.dashboard-grid {
+/* Grille de Stats */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
-.dash-card {
+.stat-card {
   background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border: 1px solid #e2e8f0;
-  position: relative;
-}
-
-.dash-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: #3b82f6;
-}
-
-.icon-box {
-  width: 60px;
-  height: 60px;
+  padding: 1.5rem;
   border-radius: 12px;
   display: flex;
   align-items: center;
+  gap: 1.2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid transparent;
+}
+
+.stat-card.blue { border-left-color: #3b82f6; }
+.stat-card.green { border-left-color: #10b981; }
+.stat-card.purple { border-left-color: #8b5cf6; }
+
+.stat-icon {
+  font-size: 2rem;
+  background: #f1f5f9;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
+  border-radius: 10px;
 }
 
-.blue { background-color: #eff6ff; color: #3b82f6; }
-.green { background-color: #f0fdf4; color: #22c55e; }
-.orange { background-color: #fff7ed; color: #f97316; }
-
-.dash-card h3 {
-  color: #1e293b;
-  margin-bottom: 15px;
-}
-
-.dash-card p {
+.stat-label {
+  display: block;
   color: #64748b;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.dash-btn {
-  margin-top: auto;
-  padding: 10px 25px;
-  background-color: #f1f5f9;
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Layout Content */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 992px) {
+  .dashboard-content { grid-template-columns: 1fr; }
+}
+
+.recent-section, .actions-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.view-all-btn {
+  background: #eff6ff;
+  color: #3b82f6;
   border: none;
-  border-radius: 8px;
-  color: #475569;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s;
 }
 
-.dash-card:hover .dash-btn {
-  background-color: #3b82f6;
+/* Mini Table */
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mini-table th {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.mini-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.9rem;
+}
+
+.client-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.tiny-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Actions Rapides */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: 0.2s;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
   color: white;
 }
 
-.badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+.action-btn.secondary {
   background: #f1f5f9;
-  font-size: 0.7rem;
-  padding: 4px 8px;
-  border-radius: 20px;
+  color: #475569;
+}
+
+.action-btn:hover {
+  filter: brightness(0.95);
+  transform: translateX(5px);
 }

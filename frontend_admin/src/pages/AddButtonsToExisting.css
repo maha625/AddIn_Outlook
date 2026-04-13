@@ -1,0 +1,510 @@
+/* AddButtonsToExisting.css */
+
+:root {
+  --bg-color: #f8fafc;        /* Fond de page ultra-clair (Slate 50) */
+  --card-bg: #ffffff;        /* Carte blanche pure */
+  --accent-color: #0284c7;    /* Bleu plus profond pour le contraste light */
+  --text-primary: #0f172a;    /* Texte presque noir (Slate 900) */
+  --text-secondary: #64748b;  /* Texte gris (Slate 500) */
+  --input-bg: #ffffff;       /* Inputs blancs */
+  --input-border: #e2e8f0;    /* Bordure Slate 200 */
+}
+
+.add-buttons-wrapper {
+  padding: 40px 20px;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.add-buttons-card {
+  background: var(--card-bg);
+  max-width: 850px;
+  margin: 0 auto;
+  border-radius: 20px;
+  /* Ombre plus douce et diffuse pour le mode clair */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
+  padding: 40px;
+  border: 1px solid var(--input-border);
+}
+
+.add-buttons-card h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #0284c7, #4f46e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Section Selection Client */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.client-select {
+  width: 100%;
+  padding: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.client-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+}
+
+/* Container des Boutons */
+.buttons-config-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.btn-edit-card {
+  background: #ffffff;
+  border: 1px solid var(--input-border);
+  padding: 20px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+/* Grid des inputs */
+.inputs-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.inputs-main input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 12px;
+  border-radius: 10px;
+  color: var(--text-primary);
+  transition: 0.2s;
+}
+
+.inputs-main input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  background: #fff;
+}
+
+/* Contrôles bas (Couleurs + Preview) */
+.color-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.color-group {
+  display: flex;
+  gap: 20px;
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Style spécifique pour le bouton couleur en Light Mode */
+.color-field input[type="color"] {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+/* Bouton Aperçu */
+.real-preview-btn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Actions */
+.btn-add-row {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  color: var(--text-secondary);
+  padding: 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-add-row:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: #f0f9ff;
+}
+
+.btn-del {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-del:hover {
+  background: #fecaca;
+}
+
+.btn-save-all {
+  width: 100%;
+  margin-top: 30px;
+  padding: 16px;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
+}
+
+.btn-save-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+  filter: brightness(1.05);
+}
+
+.btn-save-all:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Alertes */
+.alert {
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+.alert.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+/* AddButtonsToExisting.css */
+
+:root {
+  --bg-color: #f8fafc;        /* Fond de page ultra-clair (Slate 50) */
+  --card-bg: #ffffff;        /* Carte blanche pure */
+  --accent-color: #0284c7;    /* Bleu plus profond pour le contraste light */
+  --text-primary: #0f172a;    /* Texte presque noir (Slate 900) */
+  --text-secondary: #64748b;  /* Texte gris (Slate 500) */
+  --input-bg: #ffffff;       /* Inputs blancs */
+  --input-border: #e2e8f0;    /* Bordure Slate 200 */
+}
+
+.add-buttons-wrapper {
+  padding: 40px 20px;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.add-buttons-card {
+  background: var(--card-bg);
+  max-width: 850px;
+  margin: 0 auto;
+  border-radius: 20px;
+  /* Ombre plus douce et diffuse pour le mode clair */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
+  padding: 40px;
+  border: 1px solid var(--input-border);
+}
+
+.add-buttons-card h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #0284c7, #4f46e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Section Selection Client */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.client-select {
+  width: 100%;
+  padding: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.client-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+}
+
+/* Container des Boutons */
+.buttons-config-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.btn-edit-card {
+  background: #ffffff;
+  border: 1px solid var(--input-border);
+  padding: 20px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+/* Grid des inputs */
+.inputs-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.inputs-main input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 12px;
+  border-radius: 10px;
+  color: var(--text-primary);
+  transition: 0.2s;
+}
+
+.inputs-main input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  background: #fff;
+}
+
+/* Contrôles bas (Couleurs + Preview) */
+.color-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.color-group {
+  display: flex;
+  gap: 20px;
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Style spécifique pour le bouton couleur en Light Mode */
+.color-field input[type="color"] {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+/* Bouton Aperçu */
+.real-preview-btn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Actions */
+.btn-add-row {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  color: var(--text-secondary);
+  padding: 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-add-row:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: #f0f9ff;
+}
+
+.btn-del {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-del:hover {
+  background: #fecaca;
+}
+
+.btn-save-all {
+  width: 100%;
+  margin-top: 30px;
+  padding: 16px;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
+}
+
+.btn-save-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+  filter: brightness(1.05);
+}
+
+.btn-save-all:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Alertes */
+.alert {
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+.alert.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.icon-select {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  min-width: 150px;
+}
+
+.icon-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Ajustement pour l'alignement des inputs dans la carte */
+.inputs-main {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.inputs-main input, .inputs-main select {
+  flex: 1;
+}

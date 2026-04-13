@@ -1,21 +1,10 @@
-import React, { useState } from "react";
-import "./Add_clients.css";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { API_BACK_URL } from "../config/config";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-export default function AddClient() {
-  const [form, setForm] = useState({
-    site_number: "",
-    email: "",
-    dolibarr_url: "",
-    token_url: "",
-    username: "",
-    password: "",
-    dolibarr_api_key: "",
-    domain: "",
-    logo: "",
-  });
-   const ICON_OPTIONS = [
+import "./EditClient.css";
+
+const ICON_OPTIONS = [
   { label: "Étiquette", value: "fas fa-tag" },
   { label: "Lien", value: "fas fa-link" },
   { label: "Étoile", value: "fas fa-star" },
@@ -26,19 +15,70 @@ export default function AddClient() {
   { label: "Panier", value: "fas fa-shopping-cart" },
 ];
 
-  // Alignement avec la BD : label, event_name, bg_color, text_color, icon
-  const [buttons, setButtons] = useState([
-    { label: "", event_name: "", bg_color: "#2563eb", text_color: "#ffffff", icon: "fas fa-tag" }
-  ]);
-
-  const [message, setMessage] = useState("");
+export default function EditClient() {
+  const { id } = useParams();
   const navigate = useNavigate();
 
+  const [form, setForm] = useState({
+    site_number: "",
+    email: "",
+    dolibarr_url: "",
+    token_url: "",
+    username: "",
+    password: "", // Ajouté pour correspondre à AddClient
+    dolibarr_api_key: "",
+    domain: "",
+    logo: "", // Ajouté pour correspondre à AddClient
+  });
+
+  const [buttons, setButtons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  // 1. Chargement des données initiales
+  useEffect(() => {
+    const fetchClientDetails = async () => {
+      try {
+        const res = await axios.get(`${API_BACK_URL}/getClientDetails.php?id=${id}`);
+        if (res.data.success) {
+          const c = res.data.client;
+          setForm({
+            site_number: c.site_number || "",
+            email: c.email || "",
+            dolibarr_url: c.dolibarr_url || "",
+            token_url: c.token_url || "",
+            username: c.username || "",
+            password: c.password || "", 
+            dolibarr_api_key: c.dolibarr_api_key || "",
+            domain: c.domain || "",
+            logo: c.logo || "",
+          });
+          setButtons(res.data.buttons || []);
+        } else {
+          alert("Erreur: " + res.data.error);
+        }
+      } catch (err) {
+        console.error("Erreur chargement client", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClientDetails();
+  }, [id]);
+
+  // 2. Auto-complétion du domaine (uniquement si l'email change)
+  useEffect(() => {
+    if (form.email && form.email.includes("@")) {
+      const extractedDomain =form.email.split("@")[1];
+      setForm(prev => ({ ...prev, domain: extractedDomain }));
+    }
+  }, [form.email]);
+
+  // 3. Gestionnaires d'événements
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // --- Logique des Boutons ---
   const handleButtonChange = (index, field, value) => {
     const updatedButtons = [...buttons];
     updatedButtons[index][field] = value;
@@ -54,72 +94,34 @@ export default function AddClient() {
       setButtons(buttons.filter((_, i) => i !== index));
     }
   };
-  const updateButton = (index, field, value) => {
-  // 1. On crée une copie du tableau des boutons
-  const updatedButtons = [...buttons];
-  
-  // 2. On met à jour le champ spécifique (label, icon, bg_color, etc.)
-  updatedButtons[index] = { 
-    ...updatedButtons[index], 
-    [field]: value 
-  };
-  
-  // 3. On met à jour le state
-  setButtons(updatedButtons);
-};
-// Auto-complétion du domaine basée sur l'email
-useEffect(() => {
-  if (form.email && form.email.includes("@")) {
-    const extractedDomain =form.email.split("@")[1];
-    
-    // On ne met à jour que si le domaine extrait est différent de l'actuel
-    // pour éviter de boucler ou d'écraser une modif manuelle immédiatement
-    setForm(prev => ({
-      ...prev,
-      domain: extractedDomain
-    }));
-  }
-}, [form.email]); // Se déclenche dès que 'email' change
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Le payload contient maintenant les objets boutons avec les clés exactes de la BD
-    const payload = { 
-      ...form, 
-      buttons: buttons 
-    };
-
     try {
-      const res = await fetch(`${API_BACK_URL}/createClient.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const res = await axios.post(`${API_BACK_URL}/updateClient.php`, {
+        id,
+        ...form,
+        buttons
       });
-      const data = await res.json();
-
-      if (data.success) {
-        setMessage("✅ Client et boutons configurés avec succès !");
-        setForm({
-          site_number: "", email: "", dolibarr_url: "", token_url: "",
-          username: "", password: "", dolibarr_api_key: "", domain: "", logo: "",
-        });
-        setButtons([{ label: "", event_name: "", bg_color: "#2563eb", text_color: "#ffffff", icon: "fas fa-tag" }]);
-        
+      if (res.data.success) {
+        setMessage("✅ Configuration mise à jour avec succès !");
         setTimeout(() => navigate("/clients"), 2000);
       } else {
-        setMessage("❌ Erreur : " + (data.error || "Inconnue"));
+        setMessage("❌ Erreur : " + res.data.error);
       }
-    } catch {
-      setMessage("❌ Impossible de contacter le serveur.");
+    } catch (err) {
+      setMessage("❌ Erreur réseau lors de la mise à jour");
     }
   };
+
+  if (loading) return <div className="loader">Chargement...</div>;
 
   return (
     <div className="client-wrapper">
       <div className="client-card">
         <div className="header">
-          <h2>Ajouter un client</h2>
-          <p>Configurez les accès et les boutons personnalisés</p>
+          <h2>Modifier le Client <span style={{ color: '#2563eb' }}>#{id}</span></h2>
+          <p>Mettez à jour les accès et les boutons</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -131,7 +133,7 @@ useEffect(() => {
               { name: "dolibarr_url", label: "URL Dolibarr", type: "url" },
               { name: "token_url", label: "URL Token", type: "url" },
               { name: "username", label: "Nom d'utilisateur", type: "text" },
-              { name: "password", label: "Mot de passe", type: "password" },
+              { name: "password", label: "Mot de passe", type: "text" }, // Type text pour voir ce qu'on modifie en edit
               { name: "dolibarr_api_key", label: "Clé API Dolibarr", type: "text" },
               { name: "domain", label: "Domaine (ex: @entreprise.com)", type: "text" },
               { name: "logo", label: "URL Logo Client", type: "url" },
@@ -151,7 +153,7 @@ useEffect(() => {
 
           <hr className="divider" />
 
-          {/* Section 2 : Configuration des Boutons Personnalisés */}
+          {/* Section 2 : Boutons */}
           <div className="buttons-config-section">
             <div className="section-header">
               <h3>Boutons de l'Add-in</h3>
@@ -169,6 +171,7 @@ useEffect(() => {
                       type="text"
                       value={btn.label}
                       onChange={(e) => handleButtonChange(index, "label", e.target.value)}
+                      required
                     />
                   </div>
                   <div className="btn-input">
@@ -177,22 +180,21 @@ useEffect(() => {
                       type="text"
                       value={btn.event_name}
                       onChange={(e) => handleButtonChange(index, "event_name", e.target.value)}
+                      required
                     />
                   </div>
                   <div className="btn-input">
-  <label>Icône</label>
-  <select
-    value={btn.icon}
-    onChange={(e) => updateButton(index, "icon", e.target.value)}
-    className="icon-select"
-  >
-    {ICON_OPTIONS.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-</div>
+                    <label>Icône</label>
+                    <select
+                      value={btn.icon}
+                      onChange={(e) => handleButtonChange(index, "icon", e.target.value)}
+                      className="icon-select"
+                    >
+                      {ICON_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="btn-input tiny">
                     <label>Fond</label>
                     <input
@@ -210,24 +212,13 @@ useEffect(() => {
                     />
                   </div>
 
-                  {/* Aperçu rapide à côté de la ligne */}
-                  {/* Aperçu rapide à côté de la ligne */}
-<div className="btn-preview-mini">
-  <label>Rendu</label> {/* Optionnel : ajoute un petit label au dessus */}
-  <div 
-    className="preview-box" 
-    style={{ 
-      backgroundColor: btn.bg_color, 
-      color: btn.text_color,
-      padding: "0 10px", // Ajoute un peu d'espace sur les côtés pour le texte
-      width: "auto",      // Permet à la boîte de s'élargir selon le texte
-      minWidth: "40px"    // Garde une taille minimum si le label est vide
-    }}
-  >
-    <i className={btn.icon} style={{ marginRight: btn.label ? "8px" : "0" }}></i>
-    <span style={{ fontSize: "0.8rem", fontWeight: "600" }}>{btn.label}</span>
-  </div>
-</div>
+                  <div className="btn-preview-mini">
+                    <label>Rendu</label>
+                    <div className="preview-box" style={{ backgroundColor: btn.bg_color, color: btn.text_color }}>
+                      <i className={btn.icon} style={{ marginRight: btn.label ? "8px" : "0" }}></i>
+                      <span>{btn.label}</span>
+                    </div>
+                  </div>
 
                   {buttons.length > 1 && (
                     <button type="button" className="delete-btn" onClick={() => removeButton(index)}>
@@ -245,9 +236,10 @@ useEffect(() => {
             </p>
           )}
 
-          <button type="submit" className="submit-button">
-            Enregistrer le client et ses boutons
-          </button>
+          <div className="footer-actions">
+            <button type="submit" className="submit-button">Enregistrer les modifications</button>
+            <button type="button" className="btn-cancel" onClick={() => navigate("/clients")}>Annuler</button>
+          </div>
         </form>
       </div>
     </div>
