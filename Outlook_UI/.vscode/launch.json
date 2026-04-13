@@ -2,24 +2,43 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Attach to Chrome",
+      "port": 9222,
+      "request": "attach",
+      "type": "chrome",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
       "name": "Outlook Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
       "port": 9222,
       "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
+      "webRoot": "${workspaceFolder}",
       "preLaunchTask": "Debug: Outlook Desktop",
       "postDebugTask": "Stop Debug",
-      "url": "https://localhost:3000/*" 
+      // On retire l'astérisque ici car 'attach' utilise l'URL exacte ou un filtre précis
+      "urlFilter": "https://localhost:3000/*"
     },
     {
       "name": "Outlook sur le Web (Chrome)",
       "type": "chrome",
       "request": "launch",
       "url": "https://outlook.office.com/mail/",
-      "webRoot": "${workspaceRoot}",
+      "webRoot": "${workspaceFolder}",
       "sourceMaps": true,
-      "userDataDir": "${workspaceFolder}/.vscode/pwa-profiles"
+      "userDataDir": "${workspaceFolder}/.vscode/pwa-profiles",
+      // Argument crucial pour permettre le débogage des Add-ins sur le web
+      "runtimeArgs": [
+        "--remote-debugging-port=9222"
+      ]
     }
   ]
 }
