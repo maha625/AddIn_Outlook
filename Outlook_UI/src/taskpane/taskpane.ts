@@ -1,15 +1,16 @@
 /// <reference types="@types/office-js" />
 
-const ACTION_MAP: Record<string, { label: string }> = {
-  "historique": { label: "Historique des évènements" },
-  "sav": { label: "Évènement SAV" },
-  "negoce": { label: "Évènement Négoce" },
-  "demande-prix": { label: "Entrée de demande de prix" },
-  "commande": { label: "Entrée de commande" },
-  "info": { label: "Demande d'information" },
-};
+interface ClientButton {
+  id: number;
+  client_id: number;
+  label: string;
+  event_name: string;
+  bg_color: string;
+  text_color: string;
+  icon: string;
+}
 
-const API_BASE_URL = "http://localhost/backend/backend_addIn";
+const API_BASE_URL = "http://localhost:8000";
 
 // ─────────────────────────────────────────────
 //  INIT
@@ -28,7 +29,10 @@ async function initApp(): Promise<void> {
       displayEmailInfo(email);
       const realEmail = await getRealUserEmail();
       console.log("[Diva] Email réel utilisé pour auth :", realEmail);
-      await authenticateWithAPI(realEmail);
+      const sessionToken = await authenticateWithAPI(realEmail);
+      if (sessionToken) {
+        await loadActionButtons(sessionToken);
+      }
     } else {
       displayNoEmail();
       setStatus("error", "Aucun email détecté");
@@ -50,7 +54,7 @@ interface AuthResponse {
   session_token?: string;
 }
 
-async function authenticateWithAPI(userEmail: string): Promise<void> {
+async function authenticateWithAPI(userEmail: string): Promise<string | null> {
   try {
     setStatus("loading", "Identification de l'entreprise…");
     const response = await fetch(`${API_BASE_URL}/authentification/auth.php`, {
@@ -64,12 +68,63 @@ async function authenticateWithAPI(userEmail: string): Promise<void> {
       (window as any).__divaUserEmail = userEmail;
       if (data.user?.logo) displayLogoAvatar(data.user.logo);
       setStatus("ready", data.message || "Utilisateur reconnu");
-    } else {
-      setStatus("ready", data.error || "Utilisateur non reconnu");
+      return data.session_token;
     }
+    setStatus("ready", data.error || "Utilisateur non reconnu");
+    return null;
   } catch (err) {
     console.error("[Diva] Erreur auth API:", err);
     setStatus("error", "Impossible de contacter le serveur");
+    return null;
+  }
+}
+
+async function loadActionButtons(sessionToken: string): Promise<void> {
+  const actionsContainer = document.getElementById("actions");
+  if (!actionsContainer) return;
+  actionsContainer.innerHTML = `<div class="loading-placeholder">Chargement des boutons…</div>`;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/getButtonsPerUser.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_token: sessionToken }),
+    });
+    const data = await response.json();
+
+    if (!data.success) {
+      actionsContainer.innerHTML = `<div class="error-placeholder">${data.error || "Aucune action disponible"}</div>`;
+      return;
+    }
+
+    const buttons: ClientButton[] = data.buttons || [];
+    if (buttons.length === 0) {
+      actionsContainer.innerHTML = `<div class="empty-placeholder">Aucun bouton configuré pour ce client.</div>`;
+      return;
+    }
+
+    actionsContainer.innerHTML = "";
+    buttons.forEach((buttonData) => {
+      const button = document.createElement("button");
+      button.className = "action-btn";
+      button.setAttribute("type", "button");
+      button.setAttribute("data-label", buttonData.label);
+      button.setAttribute("data-event-name", buttonData.event_name);
+      button.style.backgroundColor = buttonData.bg_color || "#2563eb";
+      button.style.color = buttonData.text_color || "#ffffff";
+      button.onclick = () => handleAction(button);
+
+      button.innerHTML = `
+        <div class="btn-icon">${buttonData.icon || ""}</div>
+        <span class="btn-title">${buttonData.label}</span>
+        <span class="btn-arrow">›</span>
+      `;
+
+      actionsContainer.appendChild(button);
+    });
+  } catch (err) {
+    console.error("[Diva] Erreur récupération boutons :", err);
+    actionsContainer.innerHTML = `<div class="error-placeholder">Erreur de chargement des boutons</div>`;
   }
 }
 
@@ -205,14 +260,13 @@ function getAttachments(): Promise<AttachmentData[]> {
 //  ACTION — Envoi vers Dolibarr
 // ─────────────────────────────────────────────
 (window as any).handleAction = async function (btn: HTMLButtonElement): Promise<void> {
-  const actionKey    = btn.getAttribute("data-action") || "";
-  const action       = ACTION_MAP[actionKey];
+  const actionLabel  = btn.getAttribute("data-label") || "Action";
   const sessionToken = (window as any).__divaSessionToken;
   const userEmail    = (window as any).__divaUserEmail;
   const emailInfo    = getEmailInfo();
   const item         = Office.context.mailbox?.item;
 
-  if (!action || !sessionToken || !item) {
+  if (!actionLabel || !sessionToken || !item) {
     console.error("Action, Session ou Item manquant");
     return;
   }
@@ -229,7 +283,7 @@ function getAttachments(): Promise<AttachmentData[]> {
         sender_email:  emailInfo?.senderEmail,
         subject:       emailInfo?.subject,
         email_body:    btoa(unescape(encodeURIComponent(result.value))),
-        action_label:  action.label,
+        action_label:  actionLabel,
         attachments:   attachments,
       };
 
