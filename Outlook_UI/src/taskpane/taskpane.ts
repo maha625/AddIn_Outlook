@@ -115,8 +115,8 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
       button.onclick = () => handleAction(button);
 
       button.innerHTML = `
-        <div class="btn-icon">${buttonData.icon || ""}</div>
-        <span class="btn-title">${buttonData.label}</span>
+        <div class="btn-icon">${getIconHtml(buttonData.icon)}</div>
+        <span class="btn-title">${buttonData.label || "Action"}</span>
         <span class="btn-arrow">›</span>
       `;
 
@@ -131,6 +131,30 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
 // ─────────────────────────────────────────────
 //  UTILISATEUR
 // ─────────────────────────────────────────────
+function getIconHtml(iconClass: string | undefined): string {
+  const key = (iconClass || "fas fa-tag").split(" ").pop()?.replace("fa-", "") || "tag";
+  switch (key) {
+    case "tag":
+      return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.59 13.41L10.34 3.17A2 2 0 0 0 8.34 2H4c-1.1 0-2 .9-2 2v4.34c0 .53.21 1.04.59 1.41l10.25 10.25c.78.78 2.05.78 2.83 0l4.88-4.88a2 2 0 0 0 0-2.83zM7 7.5A1.5 1.5 0 1 1 8.5 6 1.5 1.5 0 0 1 7 7.5z"/></svg>`;
+    case "link":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 1 7.07 0l1.41 1.41a5 5 0 0 1 0 7.07 5 5 0 0 1-7.07 0L9.35 18.3"/><path d="M14 11a5 5 0 0 0-7.07 0L5.51 12.41a5 5 0 0 0 0 7.07 5 5 0 0 0 7.07 0L14 18.3"/></svg>`;
+    case "star":
+      return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.45-6.18L22 9.24l-6.36-.55L12 3 8.36 8.69 2 9.24l5.27 5.58L5.82 21z"/></svg>`;
+    case "heart":
+      return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6.42 3.42 5 5.5 5A4.5 4.5 0 0 1 12 9.09 4.5 4.5 0 0 1 18.5 5C20.58 5 22 6.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    case "check":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>`;
+    case "envelope":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><polyline points="22,6 12,13 2,6"/></svg>`;
+    case "info-circle":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+    case "exclamation-triangle":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    default:
+      return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.59 13.41L10.34 3.17A2 2 0 0 0 8.34 2H4c-1.1 0-2 .9-2 2v4.34c0 .53.21 1.04.59 1.41l10.25 10.25c.78.78 2.05.78 2.83 0l4.88-4.88a2 2 0 0 0 0-2.83zM7 7.5A1.5 1.5 0 1 1 8.5 6 1.5 1.5 0 0 1 7 7.5z"/></svg>`;
+  }
+}
+
 function getUserInfo(): { name: string; email: string } {
   // Ajout d'une sécurité au cas où le profil n'est pas encore chargé
   const profile = Office.context.mailbox?.userProfile;

@@ -346,6 +346,13 @@ body {
   transition: background 0.1s, color 0.1s;
 }
 
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: inherit;
+}
+
 .action-btn:hover .btn-icon {
   background: var(--blue-100);
   color: var(--blue-600);
