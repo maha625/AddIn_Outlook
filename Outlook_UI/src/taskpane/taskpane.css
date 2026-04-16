@@ -370,7 +370,7 @@ body {
 .btn-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-pri);
+  /*color: var(--text-pri);*/
   line-height: 1.3;
   flex: 1;
 }
