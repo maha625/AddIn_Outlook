@@ -508,3 +508,29 @@
 .inputs-main input, .inputs-main select {
   flex: 1;
 }
+/* Empêche le contenu d'être caché par une sidebar (ajustez 250px selon la largeur de votre menu) */
+.add-buttons-wrapper {
+  margin-left: 250px; 
+  padding: 40px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Active le défilement vertical */
+  height: 100vh;    /* Prend toute la hauteur de l'écran */
+}
+
+/* Version responsive : si le menu devient un burger ou disparaît sur petit écran */
+@media (max-width: 768px) {
+  .add-buttons-wrapper {
+    margin-left: 0;
+    padding: 20px;
+  }
+}
+
+/* Styles pour le sélecteur de type (TypeSelect) qui n'étaient pas définis */
+.type-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+}

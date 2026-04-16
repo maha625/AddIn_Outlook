@@ -1,158 +1,241 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+// frontend_admin/src/pages/AddButtonsToExisting.jsx
+import React, { useState, useEffect, useCallback } from "react";
 import { API_BACK_URL } from "../config/config";
 import "./AddButtonsToExisting.css";
 
-// Liste des icônes disponibles
-const ICON_OPTIONS = [
-  { label: "Étiquette", value: "fas fa-tag" },
-  { label: "Lien", value: "fas fa-link" },
-  { label: "Étoile", value: "fas fa-star" },
-  { label: "Cœur", value: "fas fa-heart" },
-  { label: "Check", value: "fas fa-check" },
-  { label: "Enveloppe", value: "fas fa-envelope" },
-  { label: "Info", value: "fas fa-info-circle" },
-  { label: "Alerte", value: "fas fa-exclamation-triangle" },
-];
+const FALLBACK_TYPE = "AC_OTH";
+
+const DEFAULT_BUTTON = {
+  label: "",
+  event_name: "",
+  bg_color: "#2563eb",
+  text_color: "#ffffff",
+  icon: "fas fa-tag",
+  dolibarr_type_code: "",   // "" = inherit client default
+};
 
 export default function AddButtonsToExisting() {
-  const [clients, setClients] = useState([]);
+  const [clients, setClients]               = useState([]);
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [buttons, setButtons] = useState([
-    { label: "", event_name: "", bg_color: "#2563eb", text_color: "#ffffff", icon: "fas fa-tag" }
-  ]);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading, setLoading] = useState(false);
 
+  // Dolibarr event types for the chosen client
+  const [eventTypes, setEventTypes]         = useState([]);
+  const [typesLoading, setTypesLoading]     = useState(false);
+  const [typesError, setTypesError]         = useState("");
+
+  // Client-level default type
+  const [clientDefault, setClientDefault]   = useState("");
+
+  const [buttons, setButtons]               = useState([{ ...DEFAULT_BUTTON }]);
+  const [saving, setSaving]                 = useState(false);
+  const [message, setMessage]               = useState("");
+
+  // ── Load client list ───────────────────────────────────────────────────────
   useEffect(() => {
-    axios.get(`${API_BACK_URL}/getClients.php`)
-      .then(res => setClients(Array.isArray(res.data) ? res.data : []))
-      .catch(err => console.error("Erreur chargement clients", err));
+    fetch(`${API_BACK_URL}/getClients.php`)
+      .then((r) => r.json())
+      .then((d) => setClients(d.clients ?? d))
+      .catch(() => setClients([]));
   }, []);
 
-  // Fonction de mise à jour unique (Même logique que précédemment)
-  const handleButtonChange = (index, field, value) => {
-    const updated = [...buttons];
-    updated[index] = { ...updated[index], [field]: value };
-    setButtons(updated);
-  };
-
-  const addButtonRow = () => setButtons([...buttons, { label: "", event_name: "", bg_color: "#2563eb", text_color: "#ffffff", icon: "fas fa-tag" }]);
-
-  const removeButtonRow = (index) => {
-    if (buttons.length > 1) setButtons(buttons.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedClientId) {
-        setMessage({ type: "error", text: "❌ Veuillez sélectionner un client." });
-        return;
+  // ── Fetch Dolibarr event types whenever client changes ─────────────────────
+  const fetchTypes = useCallback(async (clientId) => {
+    if (!clientId) {
+      setEventTypes([]);
+      setClientDefault("");
+      return;
     }
-    setLoading(true);
+    setTypesLoading(true);
+    setTypesError("");
     try {
-      const res = await axios.post(`${API_BACK_URL}/addButtons.php`, {
-        client_id: selectedClientId,
-        buttons: buttons
-      });
-      if (res.data.success) {
-        setMessage({ type: "success", text: "✅ Configuration enregistrée !" });
-        setButtons([{ label: "", event_name: "", bg_color: "#2563eb", text_color: "#ffffff", icon: "fas fa-tag" }]);
+      const res = await fetch(
+        `${API_BACK_URL}/getDolibarrEventTypes.php?client_id=${clientId}`
+      );
+      const json = await res.json();
+      if (json.success) {
+        setEventTypes(json.types ?? []);
+        setClientDefault(json.client_default ?? "");
+      } else {
+        setTypesError(json.error ?? "Impossible de récupérer les types Dolibarr");
+        setEventTypes([]);
       }
-    } catch (err) {
-      setMessage({ type: "error", text: "❌ Erreur de connexion au serveur." });
+    } catch {
+      setTypesError("Erreur réseau lors du chargement des types");
+      setEventTypes([]);
     } finally {
-      setLoading(false);
+      setTypesLoading(false);
+    }
+  }, []);
+
+  const handleClientChange = (e) => {
+    const id = e.target.value;
+    setSelectedClientId(id);
+    setMessage("");
+    fetchTypes(id);
+  };
+
+  // ── Button field helpers ───────────────────────────────────────────────────
+  const updateButton = (index, field, value) => {
+    setButtons((prev) =>
+      prev.map((btn, i) => (i === index ? { ...btn, [field]: value } : btn))
+    );
+  };
+
+  const addButton = () =>
+    setButtons((prev) => [...prev, { ...DEFAULT_BUTTON }]);
+
+  const removeButton = (index) =>
+    setButtons((prev) => prev.filter((_, i) => i !== index));
+
+  // ── Save ───────────────────────────────────────────────────────────────────
+  const handleSave = async () => {
+    if (!selectedClientId) {
+      setMessage("Veuillez sélectionner un client.");
+      return;
+    }
+    setSaving(true);
+    setMessage("");
+    try {
+      const res = await fetch(`${API_BACK_URL}/addButtons.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: selectedClientId,
+          default_dolibarr_type_code: clientDefault || null,
+          buttons,
+        }),
+      });
+      const json = await res.json();
+      setMessage(json.success ? "✅ Boutons enregistrés." : `❌ ${json.error}`);
+    } catch {
+      setMessage("❌ Erreur réseau.");
+    } finally {
+      setSaving(false);
     }
   };
 
-  return (
-    <div className="add-buttons-wrapper">
-      <div className="add-buttons-card">
-        <h2>Gestion des Boutons Personnalisés</h2>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-section">
-            <label>Choisir le Client</label>
-            <select 
-              className="client-select" 
-              value={selectedClientId} 
-              onChange={(e) => setSelectedClientId(e.target.value)} 
-              required
-            >
-              <option value="">-- Sélectionner un client --</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.domain} (Site: {c.site_number})</option>
-              ))}
-            </select>
-          </div>
+  // ── Type selector helper ───────────────────────────────────────────────────
+  // Builds the <select> used for both the global default and per-button overrides
+  const TypeSelect = ({ value, onChange, placeholder = "Hériter du défaut client" }) => (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="type-select"
+      disabled={typesLoading}
+    >
+      <option value="">{typesLoading ? "Chargement…" : placeholder}</option>
+      {eventTypes.map((t) => (
+        <option key={t.code} value={t.code}>
+          {t.label} ({t.code})
+        </option>
+      ))}
+    </select>
+  );
 
-          <div className="buttons-config-container">
-            {buttons.map((btn, index) => (
-              <div key={index} className="btn-edit-card">
-                <div className="inputs-main">
-                  <input 
-                    placeholder="Libellé" 
-                    value={btn.label} 
-                    onChange={e => handleButtonChange(index, "label", e.target.value)} 
-                    required 
-                  />
-                  <input 
-                    placeholder="Événement" 
-                    value={btn.event_name} 
-                    onChange={e => handleButtonChange(index, "event_name", e.target.value)} 
-                    required 
-                  />
-                  
-                  {/* REMPLACEMENT : Input texte par Select d'icônes */}
-                  <select 
-                    className="icon-select"
-                    value={btn.icon} 
-                    onChange={e => handleButtonChange(index, "icon", e.target.value)}
-                  >
-                    {ICON_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+  // ── Render ─────────────────────────────────────────────────────────────────
+ // Remplacez le bloc return par celui-ci :
+return (
+  <div className="add-buttons-wrapper">
+    <div className="add-buttons-card">
+      <h2>Ajouter des boutons à un client</h2>
+
+      {/* ── Client selector ── */}
+      <div className="form-section">
+        <label>Sélectionner le Client</label>
+        <select 
+          className="client-select" 
+          value={selectedClientId} 
+          onChange={handleClientChange}
+        >
+          <option value="">— Sélectionner un client —</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>
+              { c.username ?? `Client #${c.id}`}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* ── Client-level default type ── */}
+      {selectedClientId && (
+        <div className="form-section">
+          <label>Type d'événement par défaut (Fallback)</label>
+          {typesError ? (
+            <p className="alert error">{typesError}</p>
+          ) : (
+            <TypeSelect
+              value={clientDefault}
+              onChange={setClientDefault}
+              placeholder={`Aucun défaut (fallback : ${FALLBACK_TYPE})`}
+            />
+          )}
+        </div>
+      )}
+
+      {/* ── Button list ── */}
+      <div className="buttons-config-container">
+        {buttons.map((btn, index) => (
+          <div key={index} className="btn-edit-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+              <span style={{fontWeight: 700}}>Configuration Bouton {index + 1}</span>
+              {buttons.length > 1 && (
+                <button className="btn-del" onClick={() => removeButton(index)}>✕</button>
+              )}
+            </div>
+
+            <div className="inputs-main">
+              <input
+                type="text"
+                value={btn.label}
+                onChange={(e) => updateButton(index, "label", e.target.value)}
+                placeholder="Label (ex: Devis)"
+              />
+              <input
+                type="text"
+                value={btn.event_name}
+                onChange={(e) => updateButton(index, "event_name", e.target.value)}
+                placeholder="Nom événement"
+              />
+              <TypeSelect
+                value={btn.dolibarr_type_code}
+                onChange={(v) => updateButton(index, "dolibarr_type_code", v)}
+              />
+            </div>
+
+            <div className="color-controls">
+              <div className="color-group">
+                <div className="color-field">
+                  <label>Fond</label>
+                  <input type="color" value={btn.bg_color} onChange={(e) => updateButton(index, "bg_color", e.target.value)} />
                 </div>
-
-                <div className="color-controls">
-                  <div className="color-field">
-                    <label>Fond</label>
-                    <input type="color" value={btn.bg_color} onChange={e => handleButtonChange(index, "bg_color", e.target.value)} />
-                  </div>
-                  <div className="color-field">
-                    <label>Texte</label>
-                    <input type="color" value={btn.text_color} onChange={e => handleButtonChange(index, "text_color", e.target.value)} />
-                  </div>
-                  
-                  <div className="preview-zone">
-                    <button 
-                      type="button" 
-                      className="real-preview-btn"
-                      style={{ 
-                        backgroundColor: btn.bg_color, 
-                        color: btn.text_color,
-                        border: `1px solid ${btn.bg_color === '#ffffff' ? '#ddd' : btn.bg_color}` 
-                      }}
-                    >
-                      <i className={btn.icon}></i> {btn.label || "Aperçu"}
-                    </button>
-                  </div>
-
-                  <button type="button" className="btn-del" onClick={() => removeButtonRow(index)}>&times;</button>
+                <div className="color-field">
+                  <label>Texte</label>
+                  <input type="color" value={btn.text_color} onChange={(e) => updateButton(index, "text_color", e.target.value)} />
                 </div>
               </div>
-            ))}
-            <button type="button" onClick={addButtonRow} className="btn-add-row">+ Ajouter un bouton</button>
+              
+              <button className="real-preview-btn" style={{backgroundColor: btn.bg_color, color: btn.text_color}}>
+                <i className={btn.icon}></i> {btn.label || "Aperçu"}
+              </button>
+            </div>
           </div>
-
-          {message.text && <div className={`alert ${message.type}`}>{message.text}</div>}
-          <button type="submit" className="btn-save-all" disabled={loading}>
-            {loading ? "Enregistrement..." : "Enregistrer les modifications"}
-          </button>
-        </form>
+        ))}
       </div>
+
+      <button className="btn-add-row" style={{width: '100%', marginTop: '20px'}} onClick={addButton}>
+        + Ajouter un autre bouton
+      </button>
+
+      <button className="btn-save-all" onClick={handleSave} disabled={saving || !selectedClientId}>
+        {saving ? "Enregistrement en cours..." : "Enregistrer toutes les configurations"}
+      </button>
+
+      {message && (
+        <div className={`alert ${message.includes('✅') ? 'success' : 'error'}`}>
+          {message}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
