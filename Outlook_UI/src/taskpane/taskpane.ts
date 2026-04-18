@@ -8,6 +8,7 @@ interface ClientButton {
   bg_color: string;
   text_color: string;
   icon: string;
+  dolibarr_type_code: string | null;
 }
 
 const API_BASE_URL = "http://localhost:8000";
@@ -108,10 +109,13 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
       const button = document.createElement("button");
       button.className = "action-btn";
       button.setAttribute("type", "button");
-      button.setAttribute("data-label", buttonData.label);
-      button.setAttribute("data-event-name", buttonData.event_name);
-      button.style.backgroundColor = buttonData.bg_color || "#2563eb";
-      button.style.color = buttonData.text_color || "#ffffff";
+      button.setAttribute("data-label",              buttonData.label);
+      button.setAttribute("data-event-name",         buttonData.event_name);
+      // ── Store icon + type so handleAction can read them ──
+      button.setAttribute("data-icon",               buttonData.icon || "fas fa-tag");
+      button.setAttribute("data-dolibarr-type-code", buttonData.dolibarr_type_code || "");
+      button.style.backgroundColor = buttonData.bg_color  || "#2563eb";
+      button.style.color           = buttonData.text_color || "#ffffff";
       button.onclick = () => handleAction(button);
 
       button.innerHTML = `
@@ -129,7 +133,7 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────────
-//  UTILISATEUR
+//  ICÔNES
 // ─────────────────────────────────────────────
 function getIconHtml(iconClass: string | undefined): string {
   const key = (iconClass || "fas fa-tag").split(" ").pop()?.replace("fa-", "") || "tag";
@@ -145,45 +149,51 @@ function getIconHtml(iconClass: string | undefined): string {
     case "check":
       return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>`;
     case "envelope":
-      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><polyline points="22,6 12,13 2,6"/></svg>`;
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>`;
     case "info-circle":
       return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
     case "exclamation-triangle":
       return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    case "user":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    case "shopping-cart":
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
     default:
       return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.59 13.41L10.34 3.17A2 2 0 0 0 8.34 2H4c-1.1 0-2 .9-2 2v4.34c0 .53.21 1.04.59 1.41l10.25 10.25c.78.78 2.05.78 2.83 0l4.88-4.88a2 2 0 0 0 0-2.83zM7 7.5A1.5 1.5 0 1 1 8.5 6 1.5 1.5 0 0 1 7 7.5z"/></svg>`;
   }
 }
 
+// ─────────────────────────────────────────────
+//  UTILISATEUR
+// ─────────────────────────────────────────────
 function getUserInfo(): { name: string; email: string } {
-  // Ajout d'une sécurité au cas où le profil n'est pas encore chargé
   const profile = Office.context.mailbox?.userProfile;
   return {
-    name: profile?.displayName || "Utilisateur",
+    name:  profile?.displayName  || "Utilisateur",
     email: profile?.emailAddress || "",
   };
 }
 
 function getRealUserEmail(): Promise<string> {
   return new Promise((resolve) => {
-    const profile = Office.context.mailbox?.userProfile;
+    const profile      = Office.context.mailbox?.userProfile;
     const profileEmail = profile?.emailAddress || "";
     const isTechnicalAlias = /^outlook_[A-F0-9]+@outlook\.com$/i.test(profileEmail);
-    
+
     if (!isTechnicalAlias) { resolve(profileEmail); return; }
-    
+
     if (Office.context.mailbox) {
-        Office.context.mailbox.getUserIdentityTokenAsync((result: Office.AsyncResult<string>) => {
-            if (result.status === Office.AsyncResultStatus.Succeeded) {
-              try {
-                const tokenParts = result.value.split(".");
-                const payload = JSON.parse(atob(tokenParts[1]));
-                resolve(payload["preferred_username"] || payload["upn"] || payload["smtp"] || profileEmail);
-              } catch (e) { resolve(profileEmail); }
-            } else { resolve(profileEmail); }
-          });
+      Office.context.mailbox.getUserIdentityTokenAsync((result: Office.AsyncResult<string>) => {
+        if (result.status === Office.AsyncResultStatus.Succeeded) {
+          try {
+            const tokenParts = result.value.split(".");
+            const payload    = JSON.parse(atob(tokenParts[1]));
+            resolve(payload["preferred_username"] || payload["upn"] || payload["smtp"] || profileEmail);
+          } catch { resolve(profileEmail); }
+        } else { resolve(profileEmail); }
+      });
     } else {
-        resolve(profileEmail);
+      resolve(profileEmail);
     }
   });
 }
@@ -217,7 +227,7 @@ function getEmailInfo(): EmailInfo | null {
   const item = Office.context.mailbox?.item;
   if (!item) return null;
   return {
-    subject: item.subject || "(Sans objet)",
+    subject:     item.subject || "(Sans objet)",
     senderEmail: (item as any).from?.emailAddress || "inconnu",
   };
 }
@@ -246,7 +256,7 @@ interface AttachmentData {
 
 function getAttachments(): Promise<AttachmentData[]> {
   return new Promise((resolve) => {
-    const item = Office.context.mailbox?.item;
+    const item        = Office.context.mailbox?.item;
     const attachments = item?.attachments;
     if (!item || !attachments || attachments.length === 0) { resolve([]); return; }
 
@@ -261,10 +271,10 @@ function getAttachments(): Promise<AttachmentData[]> {
           item.getAttachmentContentAsync(attachment.id, (result: Office.AsyncResult<Office.AttachmentContent>) => {
             if (result.status === Office.AsyncResultStatus.Succeeded) {
               res({
-                name: attachment.name,
-                content: result.value.content,
+                name:        attachment.name,
+                content:     result.value.content,
                 contentType: attachment.contentType || "application/octet-stream",
-                size: attachment.size,
+                size:        attachment.size,
               });
             } else {
               console.warn("[Diva] PJ ignorée :", attachment.name, result.error);
@@ -284,14 +294,15 @@ function getAttachments(): Promise<AttachmentData[]> {
 //  ACTION — Envoi vers Dolibarr
 // ─────────────────────────────────────────────
 (window as any).handleAction = async function (btn: HTMLButtonElement): Promise<void> {
-  const actionLabel  = btn.getAttribute("data-label") || "Action";
-  const sessionToken = (window as any).__divaSessionToken;
-  const userEmail    = (window as any).__divaUserEmail;
-  const emailInfo    = getEmailInfo();
-  const item         = Office.context.mailbox?.item;
+  const actionLabel    = btn.getAttribute("data-label")              || "Action";
+  const dolibarrType   = btn.getAttribute("data-dolibarr-type-code") || null;
+  const sessionToken   = (window as any).__divaSessionToken;
+  const userEmail      = (window as any).__divaUserEmail;
+  const emailInfo      = getEmailInfo();
+  const item           = Office.context.mailbox?.item;
 
   if (!actionLabel || !sessionToken || !item) {
-    console.error("Action, Session ou Item manquant");
+    console.error("[Diva] Action, Session ou Item manquant");
     return;
   }
 
@@ -300,23 +311,25 @@ function getAttachments(): Promise<AttachmentData[]> {
 
       setStatus("loading", "Récupération des pièces jointes…");
       const attachments = await getAttachments();
-      
+
       const payload = {
-        session_token: sessionToken,
-        user_email:    userEmail,
-        sender_email:  emailInfo?.senderEmail,
-        subject:       emailInfo?.subject,
-        email_body:    btoa(unescape(encodeURIComponent(result.value))),
-        action_label:  actionLabel,
-        attachments:   attachments,
+        session_token:       sessionToken,
+        user_email:          userEmail,
+        sender_email:        emailInfo?.senderEmail,
+        subject:             emailInfo?.subject,
+        email_body:          btoa(unescape(encodeURIComponent(result.value))),
+        action_label:        actionLabel,
+        // ── Passes the button's type code (null = use server-side cascade) ──
+        dolibarr_type_code:  dolibarrType,
+        attachments:         attachments,
       };
 
       try {
         setStatus("loading", "Envoi à Dolibarr...");
         const response = await fetch(`${API_BASE_URL}/evenement/create_event.php`, {
-          method: "POST",
+          method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body:    JSON.stringify(payload),
         });
         const data = await response.json();
         if (data.success) {
@@ -326,7 +339,7 @@ function getAttachments(): Promise<AttachmentData[]> {
           setStatus("error", "Échec de création");
         }
       } catch (err) {
-        console.error("Erreur lors de l'envoi :", err);
+        console.error("[Diva] Erreur lors de l'envoi :", err);
         setStatus("error", "Erreur réseau");
       }
     }
