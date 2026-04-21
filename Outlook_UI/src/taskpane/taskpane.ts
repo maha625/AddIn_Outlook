@@ -11,8 +11,7 @@ interface ClientButton {
   dolibarr_type_code: string | null;
 }
 
-const API_BASE_URL = "http://localhost:8000";
-
+const API_BASE_URL = "http://localhost/backend/backend_addIn"
 // ─────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────
@@ -293,8 +292,7 @@ function getAttachments(): Promise<AttachmentData[]> {
 // ─────────────────────────────────────────────
 //  ACTION — Envoi vers Dolibarr
 // ─────────────────────────────────────────────
-(window as any).handleAction = async function (btn: HTMLButtonElement): Promise<void> {
-  const actionLabel    = btn.getAttribute("data-label")              || "Action";
+async function handleAction(btn: HTMLButtonElement): Promise<void> {  const actionLabel    = btn.getAttribute("data-label")              || "Action";
   const dolibarrType   = btn.getAttribute("data-dolibarr-type-code") || null;
   const sessionToken   = (window as any).__divaSessionToken;
   const userEmail      = (window as any).__divaUserEmail;
