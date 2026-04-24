@@ -150,13 +150,14 @@ foreach ($attachments as $index => $attachment) {
         continue;
     }
 
-    $upload_payload = [
-        "filename"    => $filename,
-        "modulepart"  => "agenda",
-        "ref"         => (string)$event_id,
-        "filecontent" => $fileContent,
-        "overwrite"   => "0",
-    ];
+   $upload_payload = [
+    "filename"    => $filename,
+    "modulepart"  => "agenda",
+    "ref"         => (string)$event_id,
+    "filecontent" => $fileContent, // Doit être du Base64 pur
+    "fileencoding"=> "base64",     // Ajoutez cette ligne
+    "overwrite"   => "0",
+];
 
     $upload_url = rtrim($client['dolibarr_url'], '/') . "/api/index.php/documents/upload";
 
