@@ -55,7 +55,7 @@ error_log("[Diva] session_token=$session_token | subject=$subject | PJ=" . count
 
 // ── Fetch client — include default_dolibarr_type_code ────────────────────────
 $stmt = $conn->prepare(
-    "SELECT dolibarr_url, dolibarr_api_key, default_dolibarr_type_code
+    "SELECT dolibarr_url, dolibarr_api_key
      FROM clients WHERE session_token = ?"
 );
 $stmt->execute([$session_token]);
@@ -71,9 +71,7 @@ error_log("[Diva] Client trouvé : " . $client['dolibarr_url']);
 // 1. Button's own code   → highest priority
 // 2. Client-level default → if button has none
 // 3. AC_OTH              → universal fallback
-$type_code = $button_type_code
-          ?? $client['default_dolibarr_type_code']
-          ?? 'AC_OTH';
+$type_code = !empty($button_type_code) ? $button_type_code : 'AC_OTH';
 
 error_log("[Diva] type_code résolu : $type_code");
 

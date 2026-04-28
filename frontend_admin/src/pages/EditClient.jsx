@@ -5,17 +5,15 @@ import { API_BACK_URL } from "../config/config";
 import "./EditClient.css";
 
 const ICON_OPTIONS = [
-  { label: "Étiquette", value: "fas fa-tag" },
-  { label: "Lien",      value: "fas fa-link" },
-  { label: "Étoile",    value: "fas fa-star" },
-  { label: "Cœur",      value: "fas fa-heart" },
-  { label: "Check",     value: "fas fa-check" },
-  { label: "Info",      value: "fas fa-info-circle" },
-  { label: "Utilisateur", value: "fas fa-user" },
-  { label: "Panier",    value: "fas fa-shopping-cart" },
+  { label: "Étiquette",    value: "fas fa-tag" },
+  { label: "Lien",         value: "fas fa-link" },
+  { label: "Étoile",       value: "fas fa-star" },
+  { label: "Cœur",         value: "fas fa-heart" },
+  { label: "Check",        value: "fas fa-check" },
+  { label: "Info",         value: "fas fa-info-circle" },
+  { label: "Utilisateur",  value: "fas fa-user" },
+  { label: "Panier",       value: "fas fa-shopping-cart" },
 ];
-
-const FALLBACK_TYPE = "AC_OTH";
 
 export default function EditClient() {
   const { id } = useParams();
@@ -35,8 +33,7 @@ export default function EditClient() {
 
   const [buttons,     setButtons]     = useState([]);
   const [eventTypes,  setEventTypes]  = useState([]);
-  const [clientDefault, setClientDefault] = useState("");
-  const [typesLoading, setTypesLoading]   = useState(false);
+  const [typesLoading, setTypesLoading] = useState(false);
   const [loading,     setLoading]     = useState(true);
   const [message,     setMessage]     = useState("");
 
@@ -58,8 +55,6 @@ export default function EditClient() {
             domain:           c.domain            || "",
             logo:             c.logo              || "",
           });
-          setClientDefault(c.default_dolibarr_type_code || "");
-          // Normalize dolibarr_type_code so the <select> always has a string
           setButtons(
             (res.data.buttons || []).map(b => ({
               ...b,
@@ -78,22 +73,17 @@ export default function EditClient() {
     fetchClientDetails();
   }, [id]);
 
-  // ── 2. Load Dolibarr event types for this client ─────────────────────────
+  // ── 2. Load event types depuis la DB (global, pas par client) ────────────
   useEffect(() => {
-    if (!id) return;
     setTypesLoading(true);
-    fetch(`${API_BACK_URL}/getDolibarrEventTypes.php?client_id=${id}`)
+    fetch(`${API_BACK_URL}/getDolibarrEventTypes.php`)
       .then(r => r.json())
       .then(json => {
-        if (json.success) {
-          setEventTypes(json.types ?? []);
-          // Only set default if not already loaded from client record
-          setClientDefault(prev => prev || json.client_default || "");
-        }
+        if (json.success) setEventTypes(json.types ?? []);
       })
       .catch(() => {})
       .finally(() => setTypesLoading(false));
-  }, [id]);
+  }, []);
 
   // ── 3. Auto-fill domain from email ───────────────────────────────────────
   useEffect(() => {
@@ -129,7 +119,6 @@ export default function EditClient() {
       const res = await axios.post(`${API_BACK_URL}/updateClient.php`, {
         id,
         ...form,
-        default_dolibarr_type_code: clientDefault || null,
         buttons,
       });
       if (res.data.success) {
@@ -158,15 +147,15 @@ export default function EditClient() {
           {/* ── Client fields ── */}
           <div className="input-grid">
             {[
-              { name: "site_number",      label: "N° de site",                type: "text"  },
-              { name: "email",            label: "Email Contact",              type: "email" },
-              { name: "dolibarr_url",     label: "URL Dolibarr",               type: "url"   },
-              { name: "token_url",        label: "URL Token",                  type: "url"   },
-              { name: "username",         label: "Nom d'utilisateur",          type: "text"  },
-              { name: "password",         label: "Mot de passe",               type: "text"  },
-              { name: "dolibarr_api_key", label: "Clé API Dolibarr",           type: "text"  },
-              { name: "domain",           label: "Domaine (ex: entreprise.com)", type: "text"},
-              { name: "logo",             label: "URL Logo Client",            type: "url"   },
+              { name: "site_number",      label: "N° de site",                  type: "text"  },
+              { name: "email",            label: "Email Contact",                type: "email" },
+              { name: "dolibarr_url",     label: "URL Dolibarr",                 type: "url"   },
+              { name: "token_url",        label: "URL Token",                    type: "url"   },
+              { name: "username",         label: "Nom d'utilisateur",            type: "text"  },
+              { name: "password",         label: "Mot de passe",                 type: "text"  },
+              { name: "dolibarr_api_key", label: "Clé API Dolibarr",             type: "text"  },
+              { name: "domain",           label: "Domaine (ex: entreprise.com)", type: "text"  },
+              { name: "logo",             label: "URL Logo Client",              type: "url"   },
             ].map(({ name, label, type }) => (
               <div className="input-group" key={name}>
                 <label>{label}</label>
@@ -176,27 +165,6 @@ export default function EditClient() {
                 />
               </div>
             ))}
-          </div>
-
-          {/* ── Client-level default type ── */}
-          <div className="form-section" style={{ margin: "18px 0 0" }}>
-            <label style={{ fontWeight: 600, display: "block", marginBottom: 6 }}>
-              Type d'événement par défaut (Fallback client)
-            </label>
-            <select
-              value={clientDefault}
-              onChange={e => setClientDefault(e.target.value)}
-              className="icon-select"
-              disabled={typesLoading}
-              style={{ minWidth: 260 }}
-            >
-              <option value="">
-                {typesLoading ? "Chargement…" : `Aucun défaut (fallback : ${FALLBACK_TYPE})`}
-              </option>
-              {eventTypes.map(t => (
-                <option key={t.code} value={t.code}>{t.label} </option>
-              ))}
-            </select>
           </div>
 
           <hr className="divider" />
@@ -236,7 +204,7 @@ export default function EditClient() {
                     </select>
                   </div>
 
-                  {/* Dolibarr type ── NEW ── */}
+                  {/* Dolibarr type */}
                   <div className="btn-input">
                     <label>Type Dolibarr</label>
                     <select
@@ -246,14 +214,12 @@ export default function EditClient() {
                       onChange={e => handleButtonChange(index, "dolibarr_type_code", e.target.value)}
                     >
                       <option value="">
-                        {typesLoading ? "Chargement…" : "Hériter du défaut client"}
+                        {typesLoading ? "Chargement…" : "Fallback (AC_OTH)"}
                       </option>
                       {eventTypes.map(t => (
-                        <option key={t.code} value={t.code}>{t.label} </option>
+                        <option key={t.code} value={t.code}>{t.label}</option>
                       ))}
                     </select>
-                    {/* Cascade preview */}
-                    
                   </div>
 
                   {/* Colors */}
