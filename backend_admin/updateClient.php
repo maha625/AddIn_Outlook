@@ -57,14 +57,15 @@ try {
 
     if (!empty($data['buttons']) && is_array($data['buttons'])) {
 
+        // Ajout de la 7ème colonne : event_name
         $placeholders = implode(', ', array_fill(
             0,
             count($data['buttons']),
-            "(?, ?, ?, ?, ?, ?)"   // 6 columns, 6 placeholders
+            "(?, ?, ?, ?, ?, ?, ?)"   // 7 colonnes maintenant
         ));
 
         $sql = "INSERT INTO client_buttons
-                    (client_id, label, bg_color, text_color, icon, dolibarr_type_code)
+                    (client_id, label, bg_color, text_color, icon, dolibarr_type_code, event_name)
                 VALUES $placeholders";
 
         $values = [];
@@ -74,10 +75,13 @@ try {
             $values[] = $btn['bg_color']             ?? '#2563eb';
             $values[] = $btn['text_color']           ?? '#ffffff';
             $values[] = $btn['icon']                 ?? 'fas fa-tag';
-            // empty string from frontend → NULL so cascade logic works correctly
             $values[] = !empty($btn['dolibarr_type_code'])
                             ? $btn['dolibarr_type_code']
                             : null;
+            
+            // Correction ici : on ajoute la valeur pour event_name
+            // Si le frontend n'envoie pas explicitement event_name, on utilise le label
+            $values[] = !empty($btn['event_name']) ? $btn['event_name'] : ($btn['label'] ?? 'unnamed_event');
         }
 
         $conn->prepare($sql)->execute($values);

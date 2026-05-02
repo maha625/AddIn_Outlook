@@ -1,239 +1,226 @@
-/* Variables de couleurs */
-:root {
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --bg-body: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --danger: #ef4444;
-  --success: #22c55e;
-}
+/* EditClient.css */
 
-.add-buttons-wrapper {
-  background-color: var(--bg-body);
+.client-wrapper {
+  padding: 10px;
+  background-color: #f4f7fa;
   min-height: 100vh;
-  padding: 40px 20px;
   display: flex;
   justify-content: center;
 }
 
-.add-buttons-card {
-  background: var(--card-bg);
+.client-card {
   width: 100%;
-  max-width: 900px;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  max-width: 1000px; /* Un peu plus large pour accommoder la grille */
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-h2 {
-  font-size: 1.5rem;
-  color: var(--text-main);
-  margin-bottom: 30px;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 10px;
+.header {
+  margin-bottom: 15px;
+  text-align: center;
 }
 
-.section-title {
-  font-size: 1.1rem;
-  color: var(--text-main);
-  margin: 40px 0 20px;
-  padding-left: 10px;
-  border-left: 4px solid var(--primary-color);
+.header h2 {
+  margin: 0;
+  font-size: 1.4rem;
 }
 
-/* Grilles de formulaire */
-.form-grid-three {
+.header p {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 5px 0;
+}
+
+/* Grille compacte pour les champs clients */
+.input-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
 }
 
-.form-grid-two {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.form-section {
+.input-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-.form-section label {
+.input-group label {
+  font-size: 0.8rem;
   font-weight: 600;
+  margin-bottom: 3px;
+  color: #444;
+}
+
+.input-group input {
+  padding: 6px 10px;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.form-section input {
-  padding: 10px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
+.divider {
+  margin: 15px 0;
+  border: 0;
+  border-top: 1px solid #eee;
 }
 
-.form-section input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+/* Section Boutons */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-/* Cartes d'édition des boutons */
-.btn-edit-card {
-  background: #f1f5f9;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 15px;
-  position: relative;
+.section-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
 }
 
-.inputs-main {
-  display: grid;
-  grid-template-columns: 1.5fr 1.5fr 1fr;
-  gap: 15px;
-  margin-bottom: 15px;
+.add-btn-row {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
 }
 
-.inputs-main input, .icon-select {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
+/* Ligne de bouton ultra-compacte */
+.button-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: #f9fafb;
+  padding: 8px;
   border-radius: 6px;
+  margin-bottom: 8px;
+  border: 1px solid #edf2f7;
+}
+
+.btn-input {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Prend l'espace disponible */
+}
+
+.btn-input.tiny {
+  flex: 0 0 50px; /* Largeur fixe pour les sélecteurs de couleur */
+}
+
+.btn-input label {
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+  color: #666;
+}
+
+.btn-input input, .btn-input select {
+  padding: 5px;
+  font-size: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Aperçu du bouton */
+.btn-preview-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-box {
+  height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  min-width: 80px;
+  justify-content: center;
+}
+
+/* Bouton supprimer */
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 1.2rem;
+}
+
+/* Pied de page : Boutons sur la même ligne */
+.footer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submit-button1, .btn-cancel {
+  flex: 1; /* Les deux boutons prennent la même largeur */
+  padding: 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
   font-size: 0.9rem;
 }
 
-/* Contrôles de couleurs et aperçu */
-.color-controls {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.color-field {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.color-field input[type="color"] {
-  border: none;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  background: none;
-}
-
-.real-preview-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  cursor: default;
-}
-
-/* Actions */
-.btn-del {
-  background: white;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: auto;
-  transition: all 0.2s;
-}
-
-.btn-del:hover {
-  background: var(--danger);
+.submit-button1 {
+  background-color: #0e6020;
   color: white;
-}
-
-.btn-add-row {
-  width: 100%;
-  padding: 12px;
-  background: white;
-  border: 2px dashed var(--border-color);
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: all 0.2s;
-}
-
-.btn-add-row:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  background: #eff6ff;
-}
-
-.footer-actions {
-  margin-top: 40px;
-  display: flex;
-  gap: 15px;
-}
-
-.btn-save-all {
-  flex: 2;
-  padding: 14px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-save-all:hover {
-  background: var(--primary-hover);
 }
 
 .btn-cancel {
-  flex: 1;
-  padding: 14px;
-  background: #94a3b8;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  height: 50px;
-  transform: translateY(28px);
+  background-color: #f36565;
+  color: #475569;
 }
 
-.btn-cancel:hover {
-  background: #64748b;
+.message {
+  padding: 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 10px 0;
 }
+
+.message.success { background: #dcfce7; color: #166534; }
+.message.error { background: #fee2e2; color: #991b1b; }
 
 .loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-weight: 600;
-  color: var(--primary-color);
+  text-align: center;
+  padding: 50px;
+  font-weight: bold;
+}
+/* Effets Hover pour les boutons d'action */
+
+.submit-button1, .btn-cancel {
+  transition: all 0.2s ease-in-out; /* Animation douce */
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .form-grid-three, .form-grid-two, .inputs-main {
-    grid-template-columns: 1fr;
-  }
+/* Hover Enregistrer (Vert plus clair ou plus foncé) */
+.submit-button1:hover {
+  background-color: #0b4d1a; /* Vert un peu plus sombre */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px); /* Léger effet de levée */
+}
+
+/* Hover Annuler (Rouge avec changement de couleur du texte pour lisibilité) */
+.btn-cancel:hover {
+  background-color: #d10000; /* Rouge plus sombre */
+  color: #ffffff; /* Texte blanc au survol pour mieux voir sur le rouge */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Effet au clic (Active) */
+.submit-button1:active, .btn-cancel:active {
+  transform: translateY(0); /* Le bouton s'enfonce au clic */
+  box-shadow: none;
 }

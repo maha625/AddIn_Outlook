@@ -263,7 +263,7 @@ export default function EditClient() {
           )}
 
           <div className="footer-actions">
-            <button type="submit" className="submit-button">
+            <button type="submit" className="submit-button1">
               Enregistrer les modifications
             </button>
             <button type="button" className="btn-cancel" onClick={() => navigate("/clients")}>

@@ -11,8 +11,7 @@ interface ClientButton {
   dolibarr_type_code: string | null;
 }
 
-const API_BASE_URL = "http://localhost:8000"
-// ─────────────────────────────────────────────
+const API_BASE_URL = "http://localhost/backend/backend_AddIn";// ─────────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────────
 Office.onReady(() => {

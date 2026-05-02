@@ -1,108 +1,106 @@
-/* SideMenu.css - Version Light & Professional */
-
 :root {
-  --sidemenu-width: 260px;
-  --primary-color: #2563eb; /* Bleu intense */
-  --bg-light: #ffffff;      /* Fond blanc pur */
-  --bg-hover: #f1f5f9;     /* Gris très léger pour le survol */
-  --text-dark: #1e293b;     /* Slate 900 pour le texte principal */
-  --text-muted: #64748b;    /* Slate 500 pour les éléments secondaires */
-  --border-color: #e2e8f0;  /* Bordures fines */
+  --sidebar-bg: #f8f9fa;       /* Gris très clair / Blanc cassé */
+  --sidebar-border: #e9ecef;   /* Bordures discrètes */
+  --accent-color: #4e73df;     /* Bleu type Outlook/Admin */
+  --text-main: #495057;       /* Gris foncé pour le texte */
+  --text-active: #2e59d9;     /* Bleu plus foncé pour l'élément actif */
+  --hover-bg: #eaecf4;        /* Gris léger au survol */
+  --sidebar-width: 260px;
 }
 
 .sidemenu {
-  width: var(--sidemenu-width);
+  width: var(--sidebar-width);
   height: 100vh;
-  background-color: var(--bg-light);
-  color: var(--text-dark);
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  color: var(--text-main);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
-  border-right: 1px solid var(--border-color); /* Remplacement de l'ombre par une bordure */
-  z-index: 1000;
-  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Logo Section */
+/* Header / Logo Section */
 .sidemenu-logo {
-  padding: 2.5rem 1.5rem;
+  padding: 25px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--text-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  background-color: white; /* Légère distinction pour le logo */
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .sidemenu-logo i {
-  color: var(--primary-color);
-  font-size: 1.6rem;
+  font-size: 1.4rem;
 }
 
-/* Navigation Section */
+/* Navigation Links */
 .sidemenu-nav {
   flex: 1;
-  padding: 1rem 0.75rem;
+  padding: 15px 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0.8rem 1rem;
+  padding: 12px 15px;
   text-decoration: none;
-  color: var(--text-muted);
-  border-radius: 10px;
+  color: var(--text-main);
+  border-radius: 8px; /* Coins arrondis pour un look moderne */
+  transition: all 0.2s ease-in-out;
   font-weight: 500;
-  transition: all 0.2s ease;
+  gap: 12px;
 }
 
 .nav-item i {
-  width: 24px;
   font-size: 1.1rem;
-  transition: color 0.2s;
+  width: 25px;
+  text-align: center;
+  color: #a3b1be; /* Icônes un peu plus claires par défaut */
 }
 
-/* Hover effect */
+/* Effet au survol */
 .nav-item:hover {
-  background-color: var(--bg-hover);
-  color: var(--primary-color);
+  background-color: var(--hover-bg);
+  color: var(--text-active);
 }
 
-/* Active State (NavLink) */
+.nav-item:hover i {
+  color: var(--text-active);
+}
+
+/* État Actif */
 .nav-item.active {
-  background-color: #eff6ff; /* Bleu très pâle */
-  color: var(--primary-color);
-  font-weight: 600;
+  background-color: #fff;
+  color: var(--text-active);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Ombre légère pour l'item actif */
+  border: 1px solid var(--sidebar-border);
 }
 
 .nav-item.active i {
-  color: var(--primary-color);
+  color: var(--accent-color);
 }
 
 /* Footer Section */
 .sidemenu-footer {
-  padding: 1.5rem;
+  padding: 15px;
   text-align: center;
-  border-top: 1px solid var(--border-color);
+  background-color: white;
+  border-top: 1px solid var(--sidebar-border);
 }
 
 .sidemenu-footer small {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* Scrollbar personnalisée pour le menu si besoin */
-.sidemenu-nav::-webkit-scrollbar {
-  width: 4px;
-}
-.sidemenu-nav::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 10px;
+  color: #adb5bd;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
