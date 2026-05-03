@@ -5,6 +5,8 @@ import Dashboard from "./pages/Dashboard";
 import AddClient from "./pages/Add_clients";
 import ClientList from "./pages/ClientList";
 import EditClient from "./pages/EditClient";
+import AddTypeEvenement from "./pages/Add_type_evenement";
+import ListTypeEvenement from "./pages/list_type_evenement";
 import "./App.css"; // N'oublie pas d'importer le CSS pour le layout flex
 
 function App() {
@@ -20,8 +22,9 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/clients" element={<ClientList />} />
             <Route path="/add-client" element={<AddClient />} />
-          
             <Route path="/edit-client/:id" element={<EditClient />} />
+            <Route path="/add-type-evenement" element={<AddTypeEvenement />} />
+            <Route path="/list-type-evenement" element={<ListTypeEvenement />} />
           </Routes>
         </main>
       </div>

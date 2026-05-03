@@ -1,0 +1,119 @@
+/* Overlay qui couvre tout l'écran */
+.edit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fond sombre semi-transparent */
+    backdrop-filter: blur(4px); /* Effet de flou sur l'arrière-plan */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* S'assure que la modale est au-dessus de tout */
+}
+
+/* La carte du formulaire */
+.edit-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out; /* Petite animation à l'ouverture */
+}
+
+.edit-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 1.4rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Structure du formulaire */
+.edit-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.edit-card label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #34495e;
+    margin-bottom: -10px; /* Rapproche le label de son input */
+}
+
+/* Styles des inputs */
+.edit-card input[type="text"],
+.edit-card input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.edit-card input:focus {
+    border-color: #3498db;
+}
+
+/* Input de couleur spécifique */
+.edit-card input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+}
+
+/* Actions (Boutons) */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.save-btn, .cancel-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.save-btn {
+    background-color: #27ae60;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.save-btn:hover, .cancel-btn:hover {
+    opacity: 0.9;
+}
+
+.save-btn:active, .cancel-btn:active {
+    transform: scale(0.98);
+}
+
+/* Animation d'apparition */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

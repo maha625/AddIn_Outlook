@@ -11,7 +11,7 @@ if (!$id) {
 }
 
 try {
-    // 1. Récupérer les infos du client
+    // 1. Récupérer les informations de base du client
     $stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
     $stmt->execute([$id]);
     $client = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -21,19 +21,19 @@ try {
         exit;
     }
 
-    // 2. Récupérer les boutons + label du type via JOIN
+    // 2. Récupérer uniquement les boutons liés à ce client
+    // On sélectionne toutes les colonnes nécessaires, y compris 'event_name'
+    // 2. Récupérer uniquement les boutons liés à ce client
     $stmtBtn = $conn->prepare("
         SELECT 
-            cb.id,
-            cb.label,
-            cb.bg_color,
-            cb.text_color,
-            cb.icon,
-            cb.dolibarr_type_code,
-            det.label AS dolibarr_type_label
-        FROM client_buttons cb
-        LEFT JOIN dolibarr_event_types det ON det.code = cb.dolibarr_type_code
-        WHERE cb.client_id = ?
+            id,
+            label,
+            bg_color,
+            text_color,
+            icon,
+            dolibarr_type_code
+        FROM client_buttons 
+        WHERE client_id = ?
     ");
     $stmtBtn->execute([$id]);
     $buttons = $stmtBtn->fetchAll(PDO::FETCH_ASSOC);

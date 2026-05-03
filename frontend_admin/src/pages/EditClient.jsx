@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_BACK_URL } from "../config/config";
 import "./EditClient.css";
 
+// Options d'icônes FontAwesome pour le menu déroulant
 const ICON_OPTIONS = [
   { label: "Étiquette",    value: "fas fa-tag" },
   { label: "Lien",         value: "fas fa-link" },
@@ -19,6 +20,7 @@ export default function EditClient() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // État pour les champs principaux du client
   const [form, setForm] = useState({
     site_number: "",
     email: "",
@@ -31,13 +33,14 @@ export default function EditClient() {
     logo: "",
   });
 
-  const [buttons,     setButtons]     = useState([]);
-  const [eventTypes,  setEventTypes]  = useState([]);
+  // États pour la gestion des boutons et des types Dolibarr
+  const [buttons, setButtons] = useState([]);
+  const [eventTypes, setEventTypes] = useState([]);
   const [typesLoading, setTypesLoading] = useState(false);
-  const [loading,     setLoading]     = useState(true);
-  const [message,     setMessage]     = useState("");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
-  // ── 1. Load client data + buttons ────────────────────────────────────────
+  // ── 1. Chargement des détails du client et de ses boutons ────────────────
   useEffect(() => {
     const fetchClientDetails = async () => {
       try {
@@ -45,16 +48,17 @@ export default function EditClient() {
         if (res.data.success) {
           const c = res.data.client;
           setForm({
-            site_number:      c.site_number       || "",
-            email:            c.email             || "",
-            dolibarr_url:     c.dolibarr_url      || "",
-            token_url:        c.token_url         || "",
-            username:         c.username          || "",
-            password:         c.password          || "",
+            site_number:      c.site_number      || "",
+            email:            c.email            || "",
+            dolibarr_url:     c.dolibarr_url     || "",
+            token_url:        c.token_url        || "",
+            username:         c.username         || "",
+            password:         c.password         || "",
             dolibarr_api_key: c.dolibarr_api_key  || "",
-            domain:           c.domain            || "",
-            logo:             c.logo              || "",
+            domain:           c.domain           || "",
+            logo:             c.logo             || "",
           });
+          
           setButtons(
             (res.data.buttons || []).map(b => ({
               ...b,
@@ -73,22 +77,30 @@ export default function EditClient() {
     fetchClientDetails();
   }, [id]);
 
-  // ── 2. Load event types depuis la DB (global, pas par client) ────────────
-  useEffect(() => {
+  // ── 2. Chargement des types d'événements Dolibarr ──────────────────────────
+useEffect(() => {
+  const fetchTypes = async () => {
     setTypesLoading(true);
-    fetch(`${API_BACK_URL}/getDolibarrEventTypes.php`)
-      .then(r => r.json())
-      .then(json => {
-        if (json.success) setEventTypes(json.types ?? []);
-      })
-      .catch(() => {})
-      .finally(() => setTypesLoading(false));
-  }, []);
+    try {
+      // On ajoute le paramètre client_id à l'URL
+      const res = await axios.get(`${API_BACK_URL}/GetDolibarrEventTypes.php?client_id=${id}`);
+      if (res.data.success) {
+        setEventTypes(res.data.types || []);
+      }
+    } catch (err) {
+      console.error("Erreur récupération types:", err);
+    } finally {
+      setTypesLoading(false);
+    }
+  };
+  fetchTypes();
+}, [id]); // Ajoutez 'id' ici pour rafraîchir si l'ID change
 
-  // ── 3. Auto-fill domain from email ───────────────────────────────────────
+  // ── 3. Auto-remplissage du domaine via l'email ─────────────────────────────
   useEffect(() => {
     if (form.email?.includes("@")) {
-      setForm(prev => ({ ...prev, domain: form.email.split("@")[1] }));
+      const detectedDomain = form.email.split("@")[1];
+      setForm(prev => ({ ...prev, domain: detectedDomain }));
     }
   }, [form.email]);
 
@@ -104,8 +116,13 @@ export default function EditClient() {
   const addButton = () =>
     setButtons(prev => [
       ...prev,
-      { label: "", bg_color: "#2563eb", text_color: "#ffffff",
-        icon: "fas fa-tag", dolibarr_type_code: "" },
+      { 
+        label: "", 
+        bg_color: "#2563eb", 
+        text_color: "#ffffff",
+        icon: "fas fa-tag", 
+        dolibarr_type_code: "" 
+      },
     ]);
 
   const removeButton = (index) => {
@@ -113,21 +130,36 @@ export default function EditClient() {
       setButtons(prev => prev.filter((_, i) => i !== index));
   };
 
+  // ── SOU MISSION (CORRIGÉE : SANS EVENT_NAME) ──────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+
     try {
-      const res = await axios.post(`${API_BACK_URL}/updateClient.php`, {
+      // Filtrage strict des boutons pour ne garder que les 5 champs + client_id (géré par PHP)
+      const cleanButtons = buttons.map(b => ({
+        label: b.label || "Sans nom",
+        bg_color: b.bg_color || "#2563eb",
+        text_color: b.text_color || "#ffffff",
+        icon: b.icon || "fas fa-tag",
+        dolibarr_type_code: b.dolibarr_type_code || null
+      }));
+
+      const payload = {
         id,
         ...form,
-        buttons,
-      });
+        buttons: cleanButtons
+      };
+
+      const res = await axios.post(`${API_BACK_URL}/updateClient.php`, payload);
+
       if (res.data.success) {
         setMessage("✅ Configuration mise à jour avec succès !");
-        setTimeout(() => navigate("/clients"), 2000);
+        setTimeout(() => navigate("/clients"), 1500);
       } else {
         setMessage("❌ Erreur : " + res.data.error);
       }
-    } catch {
+    } catch (err) {
       setMessage("❌ Erreur réseau lors de la mise à jour");
     }
   };
@@ -139,23 +171,21 @@ export default function EditClient() {
       <div className="client-card">
         <div className="header">
           <h2>Modifier le Client <span style={{ color: "#2563eb" }}>#{id}</span></h2>
-          <p>Mettez à jour les accès et les boutons</p>
+          <p>Mettez à jour les accès API et la configuration des boutons</p>
         </div>
 
         <form onSubmit={handleSubmit}>
-
-          {/* ── Client fields ── */}
           <div className="input-grid">
             {[
-              { name: "site_number",      label: "N° de site",                  type: "text"  },
+              { name: "site_number",      label: "N° de site",                type: "text"  },
               { name: "email",            label: "Email Contact",                type: "email" },
-              { name: "dolibarr_url",     label: "URL Dolibarr",                 type: "url"   },
-              { name: "token_url",        label: "URL Token",                    type: "url"   },
+              { name: "dolibarr_url",     label: "URL Dolibarr",                  type: "url"   },
+              { name: "token_url",        label: "URL Token",                     type: "url"   },
               { name: "username",         label: "Nom d'utilisateur",            type: "text"  },
-              { name: "password",         label: "Mot de passe",                 type: "text"  },
+              { name: "password",         label: "Mot de passe",                  type: "text"  },
               { name: "dolibarr_api_key", label: "Clé API Dolibarr",             type: "text"  },
               { name: "domain",           label: "Domaine (ex: entreprise.com)", type: "text"  },
-              { name: "logo",             label: "URL Logo Client",              type: "url"   },
+              { name: "logo",             label: "URL Logo Client",               type: "url"   },
             ].map(({ name, label, type }) => (
               <div className="input-group" key={name}>
                 <label>{label}</label>
@@ -169,10 +199,9 @@ export default function EditClient() {
 
           <hr className="divider" />
 
-          {/* ── Buttons ── */}
           <div className="buttons-config-section">
             <div className="section-header">
-              <h3>Boutons de l'Add-in</h3>
+              <h3>Boutons de l'Add-in Outlook</h3>
               <button type="button" className="add-btn-row" onClick={addButton}>
                 + Ajouter un bouton
               </button>
@@ -181,17 +210,15 @@ export default function EditClient() {
             {buttons.map((btn, index) => (
               <div key={index} className="button-row-container">
                 <div className="button-row">
-
-                  {/* Label */}
                   <div className="btn-input">
                     <label>Libellé</label>
                     <input
                       type="text" value={btn.label} required
                       onChange={e => handleButtonChange(index, "label", e.target.value)}
+                      placeholder="Ex: Appeler"
                     />
                   </div>
 
-                  {/* Icon */}
                   <div className="btn-input">
                     <label>Icône</label>
                     <select
@@ -204,25 +231,25 @@ export default function EditClient() {
                     </select>
                   </div>
 
-                  {/* Dolibarr type */}
                   <div className="btn-input">
-                    <label>Type Dolibarr</label>
+                    <label>Type d'événement Dolibarr</label>
                     <select
-                      value={btn.dolibarr_type_code ?? ""}
-                      className="icon-select"
-                      disabled={typesLoading}
-                      onChange={e => handleButtonChange(index, "dolibarr_type_code", e.target.value)}
+                        value={btn.dolibarr_type_code ?? ""}
+                        className="icon-select"
+                        disabled={typesLoading}
+                        onChange={e => handleButtonChange(index, "dolibarr_type_code", e.target.value)}
                     >
-                      <option value="">
-                        {typesLoading ? "Chargement…" : "Fallback (AC_OTH)"}
-                      </option>
-                      {eventTypes.map(t => (
-                        <option key={t.code} value={t.code}>{t.label}</option>
-                      ))}
+                        <option value="">
+                            {typesLoading ? "Chargement..." : "-- Sélectionner un type --"}
+                        </option>
+                        {eventTypes.map((t) => (
+                            <option key={t.code} value={t.code}>
+                                {t.label} ({t.code})
+                            </option>
+                        ))}
                     </select>
-                  </div>
+                </div>
 
-                  {/* Colors */}
                   <div className="btn-input tiny">
                     <label>Fond</label>
                     <input type="color" value={btn.bg_color}
@@ -234,14 +261,13 @@ export default function EditClient() {
                       onChange={e => handleButtonChange(index, "text_color", e.target.value)} />
                   </div>
 
-                  {/* Live preview */}
                   <div className="btn-preview-mini">
-                    <label>Rendu</label>
+                    <label>Aperçu</label>
                     <div className="preview-box"
                       style={{ backgroundColor: btn.bg_color, color: btn.text_color }}>
                       <i className={btn.icon}
                         style={{ marginRight: btn.label ? "8px" : "0" }}></i>
-                      <span>{btn.label || "Aperçu"}</span>
+                      <span>{btn.label || "Bouton"}</span>
                     </div>
                   </div>
 

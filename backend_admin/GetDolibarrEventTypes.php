@@ -1,16 +1,39 @@
 <?php
-ini_set('display_errors', 0);
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit(); }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
 
 include "db.php";
 
-// Plus besoin de client_id — types globaux
-$stmt  = $conn->query("SELECT code, label FROM dolibarr_event_types ORDER BY label");
-$types = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// On récupère l'ID du client depuis l'URL
+$client_id = $_GET['client_id'] ?? null;
 
-echo json_encode(["success" => true, "types" => $types]);
+try {
+    // La requête sélectionne les types actifs liés à l'ID OU ceux dont le client_id est NULL
+    $query = "SELECT code, libelle AS label 
+              FROM dolibarr_event_types 
+              WHERE active = 1 
+              AND (fk_user = ? OR fk_user IS NULL) 
+              ORDER BY libelle ASC";
+              
+    $stmt = $conn->prepare($query);
+    $stmt->execute([$client_id]);
+    
+    $types = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode([
+        "success" => true,
+        "types" => $types
+    ]);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "error" => $e->getMessage()
+    ]);
+}
 ?>

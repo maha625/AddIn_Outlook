@@ -26,8 +26,14 @@ function SideMenu() {
           <i className="fas fa-users"></i>
           <span>Liste des Clients</span>
         </NavLink>
-        
-
+        <NavLink to="/list-type-evenement" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <i className="fas fa-list"></i>
+          <span>Liste des Types d'Événements</span>
+        </NavLink>
+        <NavLink to="/add-type-evenement" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <i className="fas fa-plus"></i>
+          <span>Ajouter un Type d'Événement</span>
+        </NavLink>
 
       </nav>
 
