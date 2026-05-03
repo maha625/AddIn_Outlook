@@ -101,7 +101,7 @@ const AddEventTypePage = () => {
                         />
                     </div>
                     <div className="form-group">
-                        <label>Ordre d'affichage</label>
+                        <label>Position</label>
                         <input 
                             type="number" 
                             className="input-field"

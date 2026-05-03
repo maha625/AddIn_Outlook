@@ -47,19 +47,6 @@ try {
     $stmtLocal = $conn->prepare("DELETE FROM dolibarr_event_types WHERE code = :code");
     $stmtLocal->execute([':code' => $data['code']]);
 
-    // --- ÉTAPE B : SUPPRESSION DANS DOLIBARR (Objet $db) ---
-    // On utilise MAIN_DB_PREFIX pour être sûr de cibler la bonne table (llx_c_actioncomm)
-    $table_doli = MAIN_DB_PREFIX . "c_actioncomm";
-    
-    // Sécurisation de la valeur pour la requête SQL Dolibarr
-    $sqlDolibarr = "DELETE FROM " . $table_doli . " WHERE code = '" . $db->escape($data['code']) . "'";
-    
-    $resql = $db->query($sqlDolibarr);
-
-    if (!$resql) {
-        throw new Exception("Erreur lors de la suppression Dolibarr : " . $db->lasterror());
-    }
-
     // 6. Réponse finale
     ob_end_clean();
     echo json_encode([

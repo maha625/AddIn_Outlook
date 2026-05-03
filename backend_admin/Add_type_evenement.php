@@ -1,7 +1,6 @@
 <?php
 /**
- * Script d'ajout de type d'événement dans Dolibarr et la base locale
- * Projet : Add-in Outlook / BorrowMe
+ * Script d'ajout de type d'événement uniquement dans la base locale
  */
 
 if (!defined('NOCSRFCHECK')) define('NOCSRFCHECK', 1);
@@ -21,88 +20,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 include "db.php"; 
-$dolibarr_main = 'C:/dolibarr/www/dolibarr/htdocs/main.inc.php';
 
 $input = file_get_contents("php://input");
 $data = json_decode($input, true);
 
-if (!$data || empty($data['code']) || empty($data['libelle'])) {
+// 1. Vérification : On utilise fk_user pour être cohérent avec le frontend
+if (!$data || empty($data['code']) || empty($data['libelle']) || empty($data['fk_user'])) {
     ob_end_clean();
-    echo json_encode(["success" => false, "error" => "Données du formulaire incomplètes."]);
+    echo json_encode(["success" => false, "error" => "Données incomplètes : code, libelle ou fk_user manquant."]);
     exit;
 }
 
-// --- TRAITEMENT DE LA COULEUR ---
-$rawColor = !empty($data['color']) ? $data['color'] : '3498db';
-
-// 1. Version SANS # (pour Dolibarr)
-$colorNoHash = ltrim($rawColor, '#');
-
-// 2. Version AVEC # (pour la base locale / CSS)
-$colorWithHash = '#' . $colorNoHash;
+$rawColor = !empty($data['color']) ? $data['color'] : '#3498db';
+$colorWithHash = '#' . ltrim($rawColor, '#'); 
 
 try {
-    if (!file_exists($dolibarr_main)) {
-        throw new Exception("Le fichier main.inc.php est introuvable.");
-    }
-    require_once $dolibarr_main;
-    global $db;
-
-    // --- ÉTAPE A : INSERTION DANS DOLIBARR (SANS #) ---
-    $table_doli = MAIN_DB_PREFIX . "c_actioncomm";
-    
-    $sqlMax = "SELECT MAX(id) as max_id FROM " . $table_doli;
-    $resMax = $db->query($sqlMax);
-    $objMax = $db->fetch_object($resMax);
-    $nextId = (int)($objMax->max_id) + 1;
-
-    $sqlDolibarr = "INSERT INTO " . $table_doli . " (id, code, libelle, type, color, position, active) 
-                    VALUES (
-                        " . $nextId . ", 
-                        '" . $db->escape($data['code']) . "', 
-                        '" . $db->escape($data['libelle']) . "', 
-                        'user', 
-                        '" . $db->escape($colorNoHash) . "', 
-                        " . (int)$data['position'] . ", 
-                        1
-                    )";
-
-    $resql = $db->query($sqlDolibarr);
-
-    if (!$resql) {
-        if ($db->lasterrno() == 'DB_ERROR_RECORD_ALREADY_EXISTS' || $db->lasterrno() == 1062) {
-            throw new Exception("Ce code d'événement existe déjà dans Dolibarr.");
-        }
-        throw new Exception("Erreur SQL Dolibarr : " . $db->lasterror());
-    }
-
-    // --- ÉTAPE B : INSERTION DANS LA BASE LOCALE (AVEC #) ---
+    // 2. Requête : On insère fk_user pour lier le type d'événement à l'utilisateur
     $stmtLocal = $conn->prepare("
-        INSERT INTO dolibarr_event_types (id, code, libelle, color, fk_user, position, source) 
-        VALUES (NULL, :code, :libelle, :color, :fk_user, :position, 'local')
+        INSERT INTO dolibarr_event_types (code, libelle, color, fk_user, position, source) 
+        VALUES (:code, :libelle, :color, :fk_user, :position, 'local')
         ON DUPLICATE KEY UPDATE 
             libelle = VALUES(libelle),
             color = VALUES(color),
-            position = VALUES(position)
+            position = VALUES(position),
+            fk_user = VALUES(fk_user) 
     ");
 
     $stmtLocal->execute([
-        ':code'     => strtoupper($data['code']),
-        ':libelle'  => $data['libelle'],
-        ':color'    => $colorWithHash, // Utilise la version avec #
-        ':fk_user'  => !empty($data['fk_user']) ? $data['fk_user'] : null,
-        ':position' => (int)$data['position']
+        ':code'      => strtoupper($data['code']),
+        ':libelle'   => $data['libelle'],
+        ':color'     => $colorWithHash,
+        ':fk_user'   => $data['fk_user'], // Utilisation de la clé correcte venant du JS
+        ':position'  => (int)($data['position'] ?? 0)
     ]);
 
     ob_end_clean();
     echo json_encode([
         "success" => true,
-        "message" => "Type d'événement créé. Dolibarr: $colorNoHash | Local: $colorWithHash",
-        "id_cree" => $nextId
+        "message" => "Type d'événement enregistré avec succès pour l'utilisateur.",
+        "details" => [
+            "code" => strtoupper($data['code']),
+            "fk_user" => $data['fk_user']
+        ]
     ]);
 
 } catch (Exception $e) {
     if (ob_get_length()) ob_end_clean();
-    echo json_encode(["success" => false, "error" => $e->getMessage()]);
+    echo json_encode(["success" => false, "error" => "Erreur base locale : " . $e->getMessage()]);
 }
 ?>
