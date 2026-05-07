@@ -63,6 +63,7 @@ export default function EditClient() {
             (res.data.buttons || []).map(b => ({
               ...b,
               dolibarr_type_code: b.dolibarr_type_code ?? "",
+              allow_linked_events: b.allow_linked_events == 1 // Convertit 1/0 en true/false
             }))
           );
         } else {
@@ -121,7 +122,8 @@ useEffect(() => {
         bg_color: "#2563eb", 
         text_color: "#ffffff",
         icon: "fas fa-tag", 
-        dolibarr_type_code: "" 
+        dolibarr_type_code: "" ,
+        allow_linked_events: false // Par défaut non coché
       },
     ]);
 
@@ -142,7 +144,8 @@ useEffect(() => {
         bg_color: b.bg_color || "#2563eb",
         text_color: b.text_color || "#ffffff",
         icon: b.icon || "fas fa-tag",
-        dolibarr_type_code: b.dolibarr_type_code || null
+        dolibarr_type_code: b.dolibarr_type_code || null,
+        allow_linked_events : b.allow_linked_events ? 1 : 0 // Par défaut non coché
       }));
 
       const payload = {
@@ -248,6 +251,17 @@ useEffect(() => {
                             </option>
                         ))}
                     </select>
+                </div>
+                <div className="btn-input">
+                  <label>Événements liés?</label>
+                  <label className="checkbox-container">
+                    <input
+                      type="checkbox"
+                      checked={btn.allow_linked_events}
+                      onChange={e => handleButtonChange(index, "allow_linked_events", e.target.checked)}
+                    />
+                    <span className="checkbox-text">Autoriser</span>
+                  </label>
                 </div>
 
                   <div className="btn-input tiny">

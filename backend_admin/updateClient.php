@@ -40,8 +40,8 @@ try {
     // 3. Insertion des nouveaux boutons
     if (!empty($data['buttons']) && is_array($data['buttons'])) {
         
-        $columns = "(`client_id`, `label`, `bg_color`, `text_color`, `icon`, `dolibarr_type_code`)";
-        $placeholders = implode(', ', array_fill(0, count($data['buttons']), "(?, ?, ?, ?, ?, ?)"));
+        $columns = "(`client_id`, `label`, `bg_color`, `text_color`, `icon`, `dolibarr_type_code`, `allow_linked_events`)";
+        $placeholders = implode(', ', array_fill(0, count($data['buttons']), "(?, ?, ?, ?, ?, ?, ?)"));
         
         $sqlIns = "INSERT INTO `client_buttons` $columns VALUES $placeholders";
 
@@ -53,6 +53,8 @@ try {
             $values[] = $btn['text_color'] ?? '#ffffff';
             $values[] = $btn['icon'] ?? 'fas fa-tag';
             $values[] = (!empty($btn['dolibarr_type_code'])) ? $btn['dolibarr_type_code'] : null;
+            // On récupère la valeur de la case à cocher (1 pour true, 0 pour false)
+            $values[] = !empty($btn['allow_linked_events']) ? 1 : 0;
         }
 
         $stmtIns = $conn->prepare($sqlIns);
