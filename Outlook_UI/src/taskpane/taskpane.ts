@@ -9,6 +9,7 @@ interface ClientButton {
   text_color: string;
   icon: string;
   dolibarr_type_code: string | null;
+  allow_linked_events: boolean;
 }
 
 const API_BASE_URL = "http://localhost/backend/backend_AddIn";// ─────────────────────────────────────────────
@@ -106,6 +107,11 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
     buttons.forEach((buttonData) => {
       const button = document.createElement("button");
       button.className = "action-btn";
+      button.setAttribute("data-dolibarr-type-code", buttonData.dolibarr_type_code || "");
+      // Ajout de l'attribut pour la liaison
+      button.setAttribute("data-allow-linked", buttonData.allow_linked_events.toString());
+      
+      button.style.backgroundColor = buttonData.bg_color  || "#2563eb";
       button.setAttribute("type", "button");
       button.setAttribute("data-label",              buttonData.label);
     
@@ -318,85 +324,167 @@ async function checkSenderIsClient(
 async function handleAction(btn: HTMLButtonElement): Promise<void> {
   const actionLabel  = btn.getAttribute("data-label")              || "Action";
   const dolibarrType = btn.getAttribute("data-dolibarr-type-code") || null;
+  const allowLinked  = btn.getAttribute("data-allow-linked") === "1"; // Détection du mode lié
   const sessionToken = (window as any).__divaSessionToken;
-  const userEmail    = (window as any).__divaUserEmail;
   const emailInfo    = getEmailInfo();
   const item         = Office.context.mailbox?.item;
 
-  // 1. DÉCLARATION DU SCOPE : accessible partout dans handleAction
-  let tiersId: number | null = null;
+  if (!actionLabel || !sessionToken || !item) return;
 
-  if (!actionLabel || !sessionToken || !item) {
-    console.error("[Diva] Action, Session ou Item manquant");
-    return;
-  }
-
-  // ── 2. VÉRIFICATION DU TIERS (Client) ──
   const senderEmail = emailInfo?.senderEmail || "";
   setStatus("loading", "Vérification du client…");
 
   try {
     const tiersCheck = await checkSenderIsClient(sessionToken, senderEmail);
-
     if (!tiersCheck.found) {
       setStatus("error", "Client non trouvé");
-      return; // On arrête si le tiers n'existe pas dans Dolibarr
+      return;
     }
 
-    // On récupère l'ID renvoyé par checkTiersByDomain.php[cite: 15]
-    tiersId = tiersCheck.id || null; 
-    setStatus("ready", `Client : ${tiersCheck.name}`);
+    const tiersId = tiersCheck.id || null;
+    
+    // LOGIQUE DE NAVIGATION :
+    if (allowLinked && tiersId) {
+      // Si la liaison est autorisée, on affiche la modale de choix
+      showSelectionModal(btn, tiersId ,sessionToken);
+    } else {
+      // Sinon, on procède à la création directe (logique existante)
+      processCreateNewEvent(btn, tiersId);
+    }
 
   } catch (err) {
-    console.error("[Diva] Erreur vérification tiers :", err);
-    setStatus("error", "Erreur réseau (vérification)");
-    return;
+    setStatus("error", "Erreur de vérification");
   }
+}
+async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessionToken: string) {
+  const actionsContainer = document.getElementById("actions");
+  if (!actionsContainer) return;
 
-  // Courte pause pour que l'utilisateur voit le nom du client trouvé
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  // On vide et on applique un style de base au conteneur
+  actionsContainer.innerHTML = `
+    <div style="padding: 20px; font-family: 'Segoe UI', system-ui, sans-serif; color: #323130; background: #faf9f8; min-height: 100vh;">
+      
+      <button onclick="location.reload()" style="border:none; background:none; color:#0078d4; cursor:pointer; font-size:13px; font-weight:600; padding:0; margin-bottom:20px; display:flex; align-items:center; gap:5px;">
+         <span style="font-size:18px;">←</span> Retour aux actions
+      </button>
+      
+      <button id="opt-new" style="width:100%; padding:14px; background:#0078d4; color:white; border:none; border-radius:6px; font-weight:600; font-size:14px; cursor:pointer; margin-bottom:25px; box-shadow: 0 4px 6px rgba(0,120,212,0.2); transition: all 0.2s;">
+        + Créer un nouvel événement
+      </button>
 
-  // ── 3. RÉCUPÉRATION DU CORPS ET CRÉATION ──
+      <div style="display:flex; align-items:center; margin-bottom:20px;">
+        <div style="flex:1; border-bottom:1px solid #edebe9;"></div>
+        <span style="padding:0 15px; color:#a19f9d; font-size:11px; font-weight:700; text-transform:uppercase;">Ou lier à l'existant</span>
+        <div style="flex:1; border-bottom:1px solid #edebe9;"></div>
+      </div>
+
+      <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #edebe9;">
+        <label style="display:block; font-size:12px; font-weight:600; color:#605e5c; margin-bottom:8px;">Événements récents du client</label>
+        <select id="event-dropdown" style="width:100%; padding:12px; border:1px solid #d2d0ce; border-radius:4px; font-size:14px; background:#fff; color:#323130; outline:none; margin-bottom:15px; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23605e5c%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E<polyline%20points%3D%226%209%2012%2015%2018%209%22%3E<%2Fpolyline><%2Fsvg>'); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 16px;">
+          <option value="">Chargement...</option>
+        </select>
+        
+        <button id="btn-link-submit" disabled style="width:100%; padding:12px; background:#f3f2f1; color:#a19f9d; border:none; border-radius:4px; font-weight:600; font-size:14px; cursor:not-allowed; transition: all 0.3s;">
+          Lier à cet événement
+        </button>
+      </div>
+
+    </div>
+  `;
+
+  const dropdown = document.getElementById("event-dropdown") as HTMLSelectElement;
+  const submitBtn = document.getElementById("btn-link-submit") as HTMLButtonElement;
+
+  document.getElementById("opt-new")!.onclick = () => processCreateNewEvent(btn, tiersId);
+
+  // Animation simple au survol du bouton "Nouveau"
+  const btnNew = document.getElementById("opt-new") as HTMLButtonElement;
+  btnNew.onmouseover = () => btnNew.style.backgroundColor = "#005a9e";
+  btnNew.onmouseout = () => btnNew.style.backgroundColor = "#0078d4";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/evenement/getTiersEvents.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_token: sessionToken, socid: tiersId })
+    });
+    const data = await response.json();
+
+    if (data.success && data.events.length > 0) {
+      dropdown.innerHTML = '<option value="">-- Sélectionner un événement --</option>';
+      data.events.forEach((ev: any) => {
+        const opt = document.createElement("option");
+        opt.value = ev.id;
+        opt.textContent = `${ev.label} (${new Date(ev.date_event).toLocaleDateString()})`;
+        dropdown.appendChild(opt);
+      });
+
+      dropdown.onchange = () => {
+        if (dropdown.value !== "") {
+          submitBtn.disabled = false;
+          submitBtn.style.backgroundColor = "#0078d4";
+          submitBtn.style.color = "white";
+          submitBtn.style.cursor = "pointer";
+          submitBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+        } else {
+          submitBtn.disabled = true;
+          submitBtn.style.backgroundColor = "#f3f2f1";
+          submitBtn.style.color = "#a19f9d";
+          submitBtn.style.cursor = "not-allowed";
+        }
+      };
+
+      submitBtn.onclick = () => {
+        processCreateNewEvent(btn, tiersId, parseInt(dropdown.value));
+      };
+    } else {
+      dropdown.innerHTML = '<option value="">Aucun événement trouvé</option>';
+    }
+  } catch (err) {
+    dropdown.innerHTML = '<option value="">Erreur de connexion</option>';
+  }
+}
+
+// Fonction isolée pour la création finale (récupérée de votre logique handleAction initiale)
+async function processCreateNewEvent(btn: HTMLButtonElement, tiersId: number | null, parentId: number | null = null): Promise<void> {
+  const actionLabel = btn.getAttribute("data-label")!;
+  const dolibarrType = btn.getAttribute("data-dolibarr-type-code");
+  const sessionToken = (window as any).__divaSessionToken;
+  const userEmail = (window as any).__divaUserEmail;
+  const emailInfo = getEmailInfo();
+  const item = Office.context.mailbox.item;
+
+  if (!item) return;
+
   item.body.getAsync(Office.CoercionType.Text, async (result: Office.AsyncResult<string>) => {
     if (result.status === Office.AsyncResultStatus.Succeeded) {
-
-      setStatus("loading", "Récupération des pièces jointes…");
       const attachments = await getAttachments();
-
       const payload = {
-        session_token:      sessionToken,
-        user_email:         userEmail,
-        sender_email:       emailInfo?.senderEmail,
-        subject:            emailInfo?.subject,
-        email_body:         btoa(unescape(encodeURIComponent(result.value))),
-        action_label:       actionLabel,
+        session_token: sessionToken,
+        user_email: userEmail,
+        sender_email: emailInfo?.senderEmail,
+        subject: emailInfo?.subject,
+        email_body: btoa(unescape(encodeURIComponent(result.value))),
+        action_label: actionLabel,
         dolibarr_type_code: dolibarrType,
-        attachments:        attachments,
-        socid:              tiersId, // Liaison cruciale avec le tiers[cite: 14]
+        attachments: attachments,
+        socid: tiersId,
+        parent_event_id: parentId // Optionnel : pour lier à l'événement sélectionné
       };
 
       try {
         setStatus("loading", "Envoi à Dolibarr...");
         const response = await fetch(`${API_BASE_URL}/evenement/create_event.php`, {
-          method:  "POST",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify(payload),
+          body: JSON.stringify(payload),
         });
-        
         const data = await response.json();
-        
-        if (data.success) {
-          const pjMsg = attachments.length > 0 ? ` (${attachments.length} PJ)` : "";
-          setStatus("ready", `Événement créé !${pjMsg}`);
-        } else {
-          setStatus("error", data.error || "Échec de création");
-        }
+        if (data.success) setStatus("ready", "Événement traité !");
+        else setStatus("error", data.error || "Échec");
       } catch (err) {
-        console.error("[Diva] Erreur lors de l'envoi :", err);
-        setStatus("error", "Erreur réseau (création)");
+        setStatus("error", "Erreur réseau");
       }
-    } else {
-      setStatus("error", "Impossible de lire le corps de l'email");
     }
   });
 }

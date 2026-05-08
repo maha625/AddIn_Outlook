@@ -30,7 +30,7 @@ try {
         exit;
     }
 
-    $buttonStmt = $conn->prepare("SELECT id, client_id, label, bg_color, text_color, icon,dolibarr_type_code FROM client_buttons WHERE client_id = ? ORDER BY id ASC");
+    $buttonStmt = $conn->prepare("SELECT id, client_id, label, bg_color, text_color, icon,dolibarr_type_code,allow_linked_events FROM client_buttons WHERE client_id = ? ORDER BY id ASC");
     $buttonStmt->execute([$client['id']]);
     $buttons = $buttonStmt->fetchAll(PDO::FETCH_ASSOC);
 
