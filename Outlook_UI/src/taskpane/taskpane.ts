@@ -360,14 +360,17 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
   const actionsContainer = document.getElementById("actions");
   if (!actionsContainer) return;
 
-  // 1. Injection du HTML initial avec la case à cocher intégrée
- actionsContainer.innerHTML = `
+  // ── 1. RÉCUPÉRATION DES COULEURS DU BOUTON MÈRE ──
+  const parentBgColor = btn.style.backgroundColor || "#0078d4";
+  const parentTextColor = btn.style.color || "#ffffff";
+
+  // 2. Injection du HTML initial avec les couleurs dynamiques du bouton mère
+  actionsContainer.innerHTML = `
   <style>
     .panel-container {
       padding: 24px 16px; 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
       color: #242424; 
-      min-height: 100vh; 
       box-sizing: border-box;
     }
 
@@ -375,7 +378,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     .btn-back {
       border: none; 
       background: none; 
-      color: #0078d4; 
+      color: ${parentBgColor}; /* 👈 Couleur de la mère */
       cursor: pointer; 
       font-size: 13px; 
       font-weight: 600; 
@@ -387,7 +390,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       transition: all 0.2s ease;
     }
     .btn-back:hover {
-      color: #005a9e;
+      filter: brightness(0.85); /* Assombrit légèrement au survol peu importe la couleur */
       transform: translateX(-2px);
     }
 
@@ -395,20 +398,20 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     .btn-primary {
       width: 100%; 
       padding: 13px 20px; 
-      background: #0078d4; 
-      color: #ffffff; 
+      background: ${parentBgColor};  /* 👈 Couleur de la mère */
+      color: ${parentTextColor};   /* 👈 Couleur de texte de la mère */
       border: none; 
       border-radius: 6px; 
       font-weight: 600; 
       font-size: 14px; 
       cursor: pointer; 
       margin-bottom: 24px; 
-      box-shadow: 0 2px 4px rgba(0, 120, 212, 0.15); 
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
       transition: all 0.2s ease;
     }
     .btn-primary:hover {
-      background: #005a9e;
-      box-shadow: 0 4px 8px rgba(0, 120, 212, 0.25);
+      filter: brightness(0.85);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     .btn-primary:active {
       transform: scale(0.98);
@@ -456,7 +459,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     .checkbox-input {
       width: 16px; 
       height: 16px; 
-      accent-color: #0078d4; 
+      accent-color: ${parentBgColor}; /* 👈 La coche prend la couleur de la mère */
       cursor: pointer; 
       margin: 0; 
       border: 1px solid #8a8886; 
@@ -487,31 +490,31 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       box-sizing: border-box;
     }
     .select-input:focus {
-      border-color: #0078d4;
-      box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+      border-color: ${parentBgColor}; /* 👈 Bordure active de la couleur de la mère */
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
     }
 
     /* Bouton Soumettre / Lier */
     .btn-submit {
       width: 100%; 
       padding: 13px; 
-      background: #0078d4; 
-      color: #ffffff; 
-      border: 1px solid transparent; 
+      background: #f0f0f0; 
+      color: #a19f9d; 
+      border: 1px solid #e0e0e0; 
       border-radius: 6px; 
       font-weight: 600; 
       font-size: 14px; 
-      cursor: pointer; 
+      cursor: not-allowed;
       transition: all 0.2s ease;
     }
-    .btn-submit:hover:not(:disabled) {
-      background: #005a9e;
+    .btn-submit:not(:disabled) {
+      background: ${parentBgColor};  /* 👈 Couleur de la mère quand activé */
+      color: ${parentTextColor};   /* 👈 Couleur de texte de la mère quand activé */
+      border-color: transparent;
+      cursor: pointer;
     }
-    .btn-submit:disabled {
-      background: #f0f0f0; 
-      color: #a19f9d; 
-      border-color: #e0e0e0; 
-      cursor: not-allowed;
+    .btn-submit:hover:not(:disabled) {
+      filter: brightness(0.85);
     }
   </style>
 
@@ -552,25 +555,21 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
   </div>
 `;
 
-  const dropdown      = document.getElementById("event-dropdown") as HTMLSelectElement;
-  const submitBtn     = document.getElementById("btn-link-submit") as HTMLButtonElement;
+  const dropdown        = document.getElementById("event-dropdown") as HTMLSelectElement;
+  const submitBtn       = document.getElementById("btn-link-submit") as HTMLButtonElement;
   const checkboxShowAll = document.getElementById("show-all-events") as HTMLInputElement;
 
   // Configuration du bouton de création d'événement classique
   document.getElementById("opt-new")!.onclick = () => processCreateNewEvent(btn, tiersId);
-  const btnNew = document.getElementById("opt-new") as HTMLButtonElement;
-  btnNew.onmouseover = () => btnNew.style.backgroundColor = "#005a9e";
-  btnNew.onmouseout  = () => btnNew.style.backgroundColor = "#0078d4";
 
-  // 2. Fonction isolée pour charger les données et remplir le select
+  // Remarque : j'ai supprimé la modification JS de "btnNew.style.backgroundColor" au survol 
+  // car elle est maintenant gérée de manière beaucoup plus propre et universelle via 
+  // le filtre CSS `filter: brightness(0.85);` dans la balise <style> ci-dessus !
+
+  // 3. Fonction isolée pour charger les données et remplir le select
   async function loadDropdownEvents(showAll: boolean) {
     dropdown.innerHTML = '<option value="">Chargement...</option>';
-    
-    // On désactive le bouton de validation pendant le rafraîchissement
     submitBtn.disabled = true;
-    submitBtn.style.backgroundColor = "#f3f2f1";
-    submitBtn.style.color           = "#a19f9d";
-    submitBtn.style.cursor          = "not-allowed";
 
     try {
       const response = await fetch(`${API_BASE_URL}/evenement/getTiersEvents.php`, {
@@ -579,7 +578,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
         body: JSON.stringify({ 
           session_token: sessionToken, 
           socid: tiersId,
-          show_all: showAll // 👈 On transmet la valeur actuelle de notre case à cocher
+          show_all: showAll
         }),
       });
       const data = await response.json();
@@ -600,10 +599,10 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     }
   }
 
-  // 3. Premier chargement initial de la liste (par défaut décoche = false)
+  // 4. Premier chargement initial de la liste (par défaut décoche = false)
   await loadDropdownEvents(false);
 
-  // 4. Écouteur de changement (change) sur la Checkbox pour recharger dynamiquement
+  // 5. Écouteur de changement (change) sur la Checkbox pour recharger dynamiquement
   if (checkboxShowAll) {
     checkboxShowAll.addEventListener("change", () => {
       loadDropdownEvents(checkboxShowAll.checked);
@@ -612,17 +611,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
 
   // Gestion du changement sur le menu déroulant pour débloquer le bouton Valider
   dropdown.onchange = () => {
-    if (dropdown.value !== "") {
-      submitBtn.disabled = false;
-      submitBtn.style.backgroundColor = "#0078d4";
-      submitBtn.style.color           = "white";
-      submitBtn.style.cursor          = "pointer";
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.style.backgroundColor = "#f3f2f1";
-      submitBtn.style.color           = "#a19f9d";
-      submitBtn.style.cursor          = "not-allowed";
-    }
+    submitBtn.disabled = (dropdown.value === "");
   };
 
   submitBtn.onclick = () => processCreateNewEvent(btn, tiersId, parseInt(dropdown.value));
