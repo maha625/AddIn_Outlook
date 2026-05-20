@@ -315,7 +315,7 @@ export default function EditClient() {
                       <span className="checkbox-text">Autoriser</span>
                     </label>
                   </div>
-
+                  <br></br>
                   {/* Couleurs */}
                   <div className="btn-input tiny">
                     <label>Fond</label>

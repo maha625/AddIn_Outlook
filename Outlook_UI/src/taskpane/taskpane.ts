@@ -11,9 +11,8 @@ interface ClientButton {
   allow_linked_events: boolean;
 }
 
-const API_BASE_URL   = "http://localhost/backend_addin";
-const ICONS_BASE_URL = "http://localhost/icons/cors.php";
-
+const API_BASE_URL = "http://localhost/backend/backend_AddIn";
+const ICONS_BASE_URL = "http://localhost/addin_icons/cors.php";
 // ─────────────────────────────────────────────
 //  ICÔNES
 // ─────────────────────────────────────────────
@@ -27,11 +26,12 @@ function getIconHtml(iconFile: string | undefined, bgColor: string = "#2563eb"):
   if (!iconFile) {
     return `<span style="display:inline-block;width:16px;height:16px;"></span>`;
   }
-  const url    = `${ICONS_BASE_URL}?file=${iconFile}`;
-  const filter = getIconFilter(bgColor);
-  return `<img src="${url}" alt="" style="width:16px; height:16px; filter:${filter}; vertical-align:middle; flex-shrink:0;" />`;
-}
+  const url = `${ICONS_BASE_URL}?file=${iconFile}`;
 
+  // ── Filtre simplifié : on force l'icône en noir (brightness(0)) ──
+  // et on réduit son opacité pour l'adoucir un peu comme le fond gris.
+  return `<img src="${url}" alt="" style="width:16px; height:16px; filter:brightness(0); opacity: 0.6; vertical-align:middle; flex-shrink:0;" />`;
+}
 /**
  * Calcule le filtre CSS pour coloriser une icône selon la luminance du FOND.
  * - fond clair  → icône sombre  : brightness(0)
@@ -344,7 +344,7 @@ async function handleAction(btn: HTMLButtonElement): Promise<void> {
     }
 
     const tiersId = tiersCheck.id || null;
-    setStatus("ready", "Client vérifié ✓"); 
+    setStatus("ready", "Client vérifié"); 
 
     if (allowLinked && tiersId) {
       showSelectionModal(btn, tiersId, sessionToken);

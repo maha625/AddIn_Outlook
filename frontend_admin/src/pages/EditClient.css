@@ -10,7 +10,7 @@
 
 .client-card {
   width: 100%;
-  max-width: 1000px; /* Un peu plus large pour accommoder la grille */
+  max-width: 750px; /* Largeur du conteneur optimisée et compacte */
   background: white;
   padding: 15px 20px;
   border-radius: 8px;
@@ -88,42 +88,108 @@
   font-size: 0.8rem;
 }
 
-/* Ligne de bouton ultra-compacte */
+/* ==========================================================================
+   CONFIGURATION DISPOSITION DES BOUTONS SUR 2 LIGNES
+   ========================================================================== */
+
+/* Conteneur principal d'une ligne de bouton */
 .button-row {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 8px;                  
   background: #f9fafb;
-  padding: 8px;
+  padding: 8px;              
   border-radius: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   border: 1px solid #edf2f7;
+  flex-wrap: wrap;           /* Permet aux éléments de passer sous la ligne */
 }
 
+/* Éléments de saisie classiques (Libellé, Icône, Type, Événements liés) */
 .btn-input {
   display: flex;
   flex-direction: column;
-  flex: 1; /* Prend l'espace disponible */
+  flex: 1;                   
+  min-width: 160px;          /* Augmenté pour forcer une belle occupation sur la ligne 1 */
 }
 
+/* Alignement spécifique pour les DEUX palettes de couleurs (Fond & Texte) */
 .btn-input.tiny {
-  flex: 0 0 50px; /* Largeur fixe pour les sélecteurs de couleur */
+  flex: 0 0 65px;            /* Largeur fixe idéale pour les carrés de couleur */
+  min-width: 65px;
 }
 
+/* Style uniforme des labels au-dessus des champs */
 .btn-input label {
   font-size: 0.75rem;
   margin-bottom: 2px;
   color: #666;
+  font-weight: 500;
 }
 
-.btn-input input, .btn-input select {
-  padding: 5px;
-  font-size: 0.8rem;
+/* Taille réduite et uniforme de tous les champs de saisie */
+.btn-input input, 
+.btn-input select,
+.icon-select {
+  padding: 3px 6px;          
+  font-size: 0.75rem;        
   border: 1px solid #ddd;
   border-radius: 4px;
+  height: 26px;              /* Hauteur globale fixée à 26px */
+  box-sizing: border-box;
 }
 
-/* Aperçu du bouton */
+/* Ajustement de l'input type="color" */
+.btn-input.tiny input[type="color"] {
+  padding: 0;
+  background: none;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+/* ⚡ SÉPARATEUR DE LIGNE FLEXBOX : Interprète la balise <br> comme un bloc 100% ⚡ */
+.button-row br {
+  display: block;
+  flex: 0 0 100%;
+  height: 0;
+  margin: 0;
+  content: "";
+}
+
+/* Conteneur de la case à cocher (Événements liés) */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  height: 26px;              
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.checkbox-container:hover {
+  border-color: #2563eb;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.checkbox-text {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  color: #444;
+  user-select: none;
+}
+
+/* Boîte d'aperçu du bouton final */
 .btn-preview-mini {
   display: flex;
   flex-direction: column;
@@ -131,31 +197,37 @@
 }
 
 .preview-box {
-  height: 32px;
+  height: 26px;              
   padding: 0 10px;
   display: flex;
   align-items: center;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   white-space: nowrap;
-  min-width: 80px;
+  min-width: 85px;
   justify-content: center;
+  box-sizing: border-box;
+  font-weight: 500;
 }
 
-/* Bouton supprimer */
+/* Bouton supprimer (Croix rouge) */
 .delete-btn {
   background: #ef4444;
   color: white;
   border: none;
-  width: 28px;
-  height: 28px;
+  width: 26px;               
+  height: 26px;              
   border-radius: 4px;
   cursor: pointer;
   line-height: 1;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
-/* Pied de page : Boutons sur la même ligne */
+/* ==========================================================================
+   FIN DE LA SECTION BOUTONS
+   ========================================================================== */
+
+/* Pied de page : Boutons d'actions principaux */
 .footer-actions {
   display: flex;
   gap: 10px;
@@ -163,7 +235,7 @@
 }
 
 .submit-button1, .btn-cancel {
-  flex: 1; /* Les deux boutons prennent la même largeur */
+  flex: 1; 
   padding: 10px;
   border-radius: 5px;
   font-weight: 600;
@@ -198,62 +270,26 @@
   padding: 50px;
   font-weight: bold;
 }
-/* Effets Hover pour les boutons d'action */
 
+/* Effets de transition au survol */
 .submit-button1, .btn-cancel {
-  transition: all 0.2s ease-in-out; /* Animation douce */
+  transition: all 0.2s ease-in-out; 
 }
 
-/* Hover Enregistrer (Vert plus clair ou plus foncé) */
 .submit-button1:hover {
-  background-color: #0b4d1a; /* Vert un peu plus sombre */
+  background-color: #0b4d1a; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px); /* Léger effet de levée */
+  transform: translateY(-1px); 
 }
 
-/* Hover Annuler (Rouge avec changement de couleur du texte pour lisibilité) */
 .btn-cancel:hover {
-  background-color: #d10000; /* Rouge plus sombre */
-  color: #ffffff; /* Texte blanc au survol pour mieux voir sur le rouge */
+  background-color: #d10000; 
+  color: #ffffff; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
-/* Effet au clic (Active) */
 .submit-button1:active, .btn-cancel:active {
-  transform: translateY(0); /* Le bouton s'enfonce au clic */
+  transform: translateY(0); 
   box-shadow: none;
-}
-/* Style pour le conteneur de la case à cocher */
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  height: 25px; /* Pour s'aligner sur la hauteur des inputs texte/select */
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0 8px;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.checkbox-container:hover {
-  border-color: #2563eb;
-}
-
-/* Style de l'input checkbox lui-même */
-.checkbox-container input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  cursor: pointer;
-  accent-color: #2563eb; /* Couleur de la coche */
-}
-
-/* Style du texte "Autoriser" */
-.checkbox-text {
-  margin-left: 8px;
-  font-size: 0.8rem;
-  color: #444;
-  user-select: none;
 }
