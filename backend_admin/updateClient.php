@@ -22,13 +22,13 @@ try {
     $stmt = $conn->prepare("
         UPDATE `clients` SET 
             `email` = ?, `domain` = ?, `site_number` = ?, `dolibarr_url` = ?, 
-            `token_url` = ?, `dolibarr_api_key` = ?, `username` = ?, `password` = ?, `logo` = ? 
+             `dolibarr_api_key` = ?, `username` = ?,  `logo` = ? 
         WHERE `id` = ?
     ");
     $stmt->execute([
         $data['email'] ?? '', $data['domain'] ?? '', $data['site_number'] ?? '',
-        $data['dolibarr_url'] ?? '', $data['token_url'] ?? '', $data['dolibarr_api_key'] ?? '',
-        $data['username'] ?? '', $data['password'] ?? '', $data['logo'] ?? '', $id
+        $data['dolibarr_url'] ?? '', $data['dolibarr_api_key'] ?? '',
+        $data['username'] ?? '', $data['logo'] ?? '', $id
     ]);
 
     // 2. Suppression des anciens boutons (L'ERREUR VENAIT D'ICI)

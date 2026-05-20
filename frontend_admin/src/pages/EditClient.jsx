@@ -17,9 +17,7 @@ export default function EditClient() {
     site_number: "",
     email: "",
     dolibarr_url: "",
-    token_url: "",
     username: "",
-    password: "",
     dolibarr_api_key: "",
     domain: "",
     logo: "",
@@ -65,9 +63,7 @@ export default function EditClient() {
             site_number:      c.site_number      || "",
             email:            c.email            || "",
             dolibarr_url:     c.dolibarr_url     || "",
-            token_url:        c.token_url        || "",
             username:         c.username         || "",
-            password:         c.password         || "",
             dolibarr_api_key: c.dolibarr_api_key || "",
             domain:           c.domain           || "",
             logo:             c.logo             || "",
@@ -200,7 +196,7 @@ export default function EditClient() {
     <div className="client-wrapper">
       <div className="client-card">
         <div className="header">
-          <h2>Modifier le Client <span style={{ color: "#2563eb" }}>#{id}</span></h2>
+          <h2>Modifier le Client <span style={{ color: "#2563eb" }}>#{form.site_number}</span></h2>
           <p>Mettez à jour les accès API et la configuration des boutons</p>
         </div>
 
@@ -210,9 +206,7 @@ export default function EditClient() {
               { name: "site_number",      label: "N° de site",                  type: "text"  },
               { name: "email",            label: "Email Contact",                type: "email" },
               { name: "dolibarr_url",     label: "URL Dolibarr",                 type: "url"   },
-              { name: "token_url",        label: "URL Token",                    type: "url"   },
               { name: "username",         label: "Nom d'utilisateur",            type: "text"  },
-              { name: "password",         label: "Mot de passe",                 type: "text"  },
               { name: "dolibarr_api_key", label: "Clé API Dolibarr",             type: "text"  },
               { name: "domain",           label: "Domaine (ex: entreprise.com)", type: "text"  },
               { name: "logo",             label: "URL Logo Client",              type: "url"   },

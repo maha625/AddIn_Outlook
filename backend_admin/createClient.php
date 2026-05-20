@@ -18,8 +18,7 @@ if (!$data) {
 }
 
 try {
-    // 1. Préparation des données
-    $hashedPassword = password_hash($data["password"], PASSWORD_DEFAULT);
+
     
     // Calcul du domaine si vide
     $domain = !empty($data["domain"]) ? $data["domain"] : substr(strrchr($data["email"], "@"), 1);
@@ -27,17 +26,15 @@ try {
     // 2. Insertion du Client uniquement
     $stmtClient = $conn->prepare("
         INSERT INTO clients 
-        (site_number, email, dolibarr_url, token_url, username, password, dolibarr_api_key, domain, logo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (site_number, email, dolibarr_url,  username,  dolibarr_api_key, domain, logo)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
 
     $stmtClient->execute([
         $data["site_number"],
         $data["email"],
         $data["dolibarr_url"],
-        $data["token_url"],
         $data["username"],
-        $hashedPassword,
         $data["dolibarr_api_key"],
         $domain,
         $data["logo"]
