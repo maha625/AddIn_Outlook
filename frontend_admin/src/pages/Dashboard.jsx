@@ -7,38 +7,44 @@ import "./Dashboard.css";
 // Import d'icônes si tu en as (ex: lucide-react ou font-awesome), 
 // sinon on utilise des emojis pour la démo.
 export default function Dashboard() {
+
   const [stats, setStats] = useState({
-    total: 0,
-    recent: [],
-    recentAdded: "Aucun" // 👈 Corrigé pour correspondre à l'état initial
-  });
+  total: 0,
+  recent: [],
+  recentAdded: "Aucun",
+  apiStatus: false
+});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const res = await axios.get(`${API_BACK_URL}/getClients.php`);
-        const data = Array.isArray(res.data) ? res.data : [];
-        
-        setStats({
-          total: data.length,
-          
-          // 1. Puisque l'API donne déjà du plus récent au plus ancien,
-          // on prend simplement les 5 premiers éléments pour la table.
-          recent: data.slice(0, 5), 
-          
-          // 2. 👇 LE PLUS NOUVEAU CLIENT : Il est à l'index 0 grâce au ORDER BY id DESC
-          recentAdded: data.length > 0 ? data[0].domain : "Aucun"
-        });
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur Dashboard:", error);
-        setLoading(false);
-      }
-    };
-    fetchDashboardData();
-  }, []);
+  const fetchDashboardData = async () => {
+    try {
+      const res = await axios.get(`${API_BACK_URL}/getClients.php`);
+
+      const data = Array.isArray(res.data) ? res.data : [];
+
+      setStats({
+        total: data.length,
+        recent: data.slice(0, 5),
+        recentAdded: data.length > 0 ? data[0].domain : "Aucun",
+        apiStatus: true
+      });
+
+    } catch (error) {
+      console.error("Erreur Dashboard:", error);
+
+      setStats(prev => ({
+        ...prev,
+        apiStatus: false
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboardData();
+}, []);
 
   if (loading) return <div className="loader">Initialisation du panel...</div>;
 
@@ -68,13 +74,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="stat-card purple">
-          <div className="stat-icon">🔗</div>
-          <div className="stat-info">
-            <span className="stat-label">Status API</span>
-            <span className="stat-value">Opérationnel</span>
-          </div>
-        </div>
+        <div className={`stat-card ${stats.apiStatus ? "green" : "red"}`}>
+  <div className="stat-icon">
+    {stats.apiStatus ? "🟢" : "🔴"}
+  </div>
+
+  <div className="stat-info">
+    <span className="stat-label">Status API</span>
+
+    <span className="stat-value">
+      {stats.apiStatus ? "Opérationnelle" : "Indisponible"}
+    </span>
+  </div>
+</div>
       </div>
 
       <div className="dashboard-content">

@@ -216,3 +216,6 @@
   .dashboard-container { margin-left: 0; }
   .dashboard-content { grid-template-columns: 1fr; }
 }
+.stat-card.red {
+  border-left: 5px solid #ef4444;
+}
