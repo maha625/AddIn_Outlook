@@ -11,8 +11,9 @@ interface ClientButton {
   allow_linked_events: boolean;
 }
 
-const API_BASE_URL = "http://localhost/backend_addin";
-const ICONS_BASE_URL = "http://localhost/icons/cors.php";
+const API_BASE_URL = "http://localhost/backend/backend_AddIn";
+const ICONS_BASE_URL = "http://localhost/addin_icons/cors.php";
+
 // Après la déclaration de ICONS_BASE_URL, ajouter :
 let currentPalette: Palette | null = null;
 
