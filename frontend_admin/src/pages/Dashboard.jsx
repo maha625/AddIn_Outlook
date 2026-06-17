@@ -8,8 +8,11 @@ import "./Dashboard.css";
 // sinon on utilise des emojis pour la démo.
 export default function Dashboard() {
 
-  const [stats, setStats] = useState({
+
+const [stats, setStats] = useState({
   total: 0,
+  totalEventTypes: 0,
+  totalButtons: 0,
   recent: [],
   recentAdded: "Aucun",
   apiStatus: false
@@ -20,16 +23,25 @@ export default function Dashboard() {
   useEffect(() => {
   const fetchDashboardData = async () => {
     try {
-      const res = await axios.get(`${API_BACK_URL}/getClients.php`);
+      const [clientsRes, dashboardRes] = await Promise.all([
+  axios.get(`${API_BACK_URL}/getClients.php`),
+  axios.get(`${API_BACK_URL}/getDashboardStats.php`)
+  
+]);
+console.log("Dashboard API :", dashboardRes.data);
 
-      const data = Array.isArray(res.data) ? res.data : [];
+const clients = Array.isArray(clientsRes.data)
+  ? clientsRes.data
+  : [];
 
-      setStats({
-        total: data.length,
-        recent: data.slice(0, 5),
-        recentAdded: data.length > 0 ? data[0].domain : "Aucun",
-        apiStatus: true
-      });
+setStats({
+  total: dashboardRes.data.totalClients,
+  totalEventTypes: dashboardRes.data.totalEventTypes,
+  totalButtons: dashboardRes.data.totalButtons,
+  recent: clients.slice(0, 5),
+  recentAdded: clients.length > 0 ? clients[0].domain : "Aucun",
+  apiStatus: true
+});
 
     } catch (error) {
       console.error("Erreur Dashboard:", error);
@@ -86,8 +98,24 @@ export default function Dashboard() {
       {stats.apiStatus ? "Opérationnelle" : "Indisponible"}
     </span>
   </div>
+  
+</div>
+<div className="stat-card purple">
+  <div className="stat-icon">📅</div>
+  <div className="stat-info">
+    <span className="stat-label">Types d'événements</span>
+    <span className="stat-value">{stats.totalEventTypes}</span>
+  </div>
+</div>
+<div className="stat-card orange">
+  <div className="stat-icon">🔘</div>
+  <div className="stat-info">
+    <span className="stat-label">Boutons Outlook</span>
+    <span className="stat-value">{stats.totalButtons}</span>
+  </div>
 </div>
       </div>
+      
 
       <div className="dashboard-content">
         {/* Liste des clients récents */}
