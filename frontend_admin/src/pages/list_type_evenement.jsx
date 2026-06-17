@@ -113,7 +113,7 @@ const EventSelector = () => {
                                         {type.position || 0}
                                     </td>
                                     <td>
-                                        <div className="action-buttons">
+                                        <div className="action-buttonss">
                                             <button 
                                                 className="btn-edit" 
                                                 onClick={() => setEditingEvent(type)}

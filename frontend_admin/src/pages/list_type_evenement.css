@@ -103,7 +103,7 @@
 }
 
 /* Boutons d'action */
-.action-buttons {
+.action-buttonss {
     display: flex;
     flex-direction: row; /* Force l'alignement horizontal */
     align-items: center;
@@ -113,7 +113,7 @@
     padding: 0;
 }
 
-.action-buttons button {
+.action-buttonss button {
     display: flex;
     align-items: center;
     justify-content: center;
