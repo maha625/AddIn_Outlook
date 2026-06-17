@@ -13,6 +13,8 @@ interface ClientButton {
 
 const API_BASE_URL = "http://localhost/backend_addin";
 const ICONS_BASE_URL = "http://localhost/icons/cors.php";
+// Après la déclaration de ICONS_BASE_URL, ajouter :
+let currentPalette: Palette | null = null;
 
 // ─────────────────────────────────────────────
 //  ICÔNES
@@ -36,6 +38,24 @@ function getIconFilter(bgHex: string): string {
   return luminance > 0.5
     ? "brightness(0)"
     : "brightness(0) invert(1)";
+}
+interface Palette {
+  id: string;
+  header_bg: string;
+  header_text: string;
+  accent: string;
+  bg_canvas: string;
+  btn_bg: string;    // ← ajouter
+  btn_text: string;  // ← ajouter
+}
+
+function applyPalette(palette: Palette): void {
+  const root = document.documentElement;
+  root.style.setProperty("--header-bg", palette.header_bg);
+  root.style.setProperty("--header-text", palette.header_text);
+  root.style.setProperty("--blue-500", palette.accent);
+  root.style.setProperty("--text-accent", palette.accent);
+  root.style.setProperty("--bg-canvas", palette.bg_canvas);
 }
 
 // ─────────────────────────────────────────────
@@ -94,6 +114,10 @@ async function authenticateWithAPI(userEmail: string): Promise<string | null> {
       (window as any).__divaUserEmail = userEmail;
       if (data.user?.logo) displayLogoAvatar(data.user.logo);
       setStatus("ready", data.message || "Utilisateur reconnu");
+      if (data.user?.palette) {
+        currentPalette = data.user.palette;  // ← stocker
+        applyPalette(data.user.palette);
+      }
       return data.session_token;
     }
     setStatus("ready", data.error || "Utilisateur non reconnu");

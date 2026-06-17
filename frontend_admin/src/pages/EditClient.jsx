@@ -4,11 +4,6 @@ import axios from "axios";
 import { API_BACK_URL, ICONS_BASE_URL } from "../config/config";
 import "./EditClient.css";
 
-// ICONS_BASE_URL pointe vers le dossier /icons/ à la racine du serveur
-// ex: "http://ton-domaine.com/icons"  ou  "http://localhost/icons"
-// Définis cette variable dans ton config.js :
-//   export const ICONS_BASE_URL = "http://localhost/icons";
-
 export default function EditClient() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,26 +16,40 @@ export default function EditClient() {
     dolibarr_api_key: "",
     domain: "",
     logo: "",
+    palette_id: "default",
   });
 
   const [buttons,      setButtons]      = useState([]);
   const [eventTypes,   setEventTypes]   = useState([]);
-  const [iconOptions,  setIconOptions]  = useState([]); // chargé depuis icons.json
+  const [iconOptions,  setIconOptions]  = useState([]);
   const [typesLoading, setTypesLoading] = useState(false);
   const [iconsLoading, setIconsLoading] = useState(true);
   const [loading,      setLoading]      = useState(true);
   const [message,      setMessage]      = useState("");
+  const [palettes,     setPalettes]     = useState([]);
+  const [palette,      setPalette]      = useState(null);
 
-  // ── 1. Chargement dynamique des icônes depuis icons/icons.json ───────────
-  // Aucun changement de code nécessaire pour ajouter une nouvelle icône :
-  // il suffit de déposer le fichier dans /icons/ et d'ajouter une ligne dans icons.json
+  // ── 1. Chargement des palettes ───────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API_BACK_URL}/getPalettes.php`)
+      .then(r => r.json())
+      .then(d => setPalettes(d.palettes || []));
+  }, []);
+
+  // ── 2. Mettre à jour la palette courante quand form.palette_id change ────
+  useEffect(() => {
+    if (palettes.length && form.palette_id) {
+      setPalette(palettes.find(p => p.id === form.palette_id) || palettes[0]);
+    }
+  }, [form.palette_id, palettes]);
+
+  // ── 3. Chargement dynamique des icônes ───────────────────────────────────
   useEffect(() => {
     const fetchIcons = async () => {
       setIconsLoading(true);
       try {
         const res = await fetch(`${ICONS_BASE_URL}?file=icons.json`);
         const data = await res.json();
-        // data = [{ label: "Étiquette", file: "tag.svg" }, ...]
         setIconOptions(data);
       } catch (err) {
         console.error("Erreur chargement icônes :", err);
@@ -52,7 +61,7 @@ export default function EditClient() {
     fetchIcons();
   }, []);
 
-  // ── 2. Chargement des détails du client et de ses boutons ────────────────
+  // ── 4. Chargement des détails du client et de ses boutons ────────────────
   useEffect(() => {
     const fetchClientDetails = async () => {
       try {
@@ -67,6 +76,7 @@ export default function EditClient() {
             dolibarr_api_key: c.dolibarr_api_key || "",
             domain:           c.domain           || "",
             logo:             c.logo             || "",
+            palette_id:       c.palette_id       || "default",
           });
           setButtons(
             (res.data.buttons || []).map(b => ({
@@ -87,7 +97,7 @@ export default function EditClient() {
     fetchClientDetails();
   }, [id]);
 
-  // ── 3. Chargement des types d'événements Dolibarr ────────────────────────
+  // ── 5. Chargement des types d'événements Dolibarr ────────────────────────
   useEffect(() => {
     const fetchTypes = async () => {
       setTypesLoading(true);
@@ -103,7 +113,7 @@ export default function EditClient() {
     fetchTypes();
   }, [id]);
 
-  // ── 4. Auto-remplissage du domaine via l'email ───────────────────────────
+  // ── 6. Auto-remplissage du domaine via l'email ───────────────────────────
   useEffect(() => {
     if (form.email?.includes("@")) {
       const detectedDomain = form.email.split("@")[1];
@@ -112,17 +122,8 @@ export default function EditClient() {
   }, [form.email]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
+  const buildIconUrl = (file) => `${ICONS_BASE_URL}?file=${file}`;
 
-  /** URL complète d'une icône : "tag.svg" → "http://localhost/icons/tag.svg" */
- const buildIconUrl = (file) => `${ICONS_BASE_URL}?file=${file}`;
-
-  /**
-   * Filtre CSS pour coloriser une icône (SVG ou PNG) selon la couleur de texte
-   * du bouton. Fonctionne parfaitement si l'icône est noire ou blanche sur
-   * fond transparent.
-   *   - fond sombre / texte clair → invert(1) pour icône blanche
-   *   - fond clair  / texte sombre → pas d'inversion (icône sombre)
-   */
   const getIconFilter = (textColor = "#ffffff") => {
     const clean = textColor.replace("#", "");
     if (clean.length < 6) return "brightness(0) invert(1)";
@@ -131,8 +132,8 @@ export default function EditClient() {
     const b = parseInt(clean.substring(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5
-      ? "brightness(0)"           // texte sombre → icône sombre
-      : "brightness(0) invert(1)"; // texte clair  → icône blanche
+      ? "brightness(0)"
+      : "brightness(0) invert(1)";
   };
 
   // ── Handlers ─────────────────────────────────────────────────────────────
@@ -149,9 +150,9 @@ export default function EditClient() {
       ...prev,
       {
         label:               "",
-        bg_color:            "#2563eb",
-        text_color:          "#ffffff",
-        icon:                iconOptions[0]?.file || "tag.svg", // première icône dispo
+        bg_color:            palette?.btn_bg   || "#2563eb",
+        text_color:          palette?.btn_text || "#ffffff",
+        icon:                iconOptions[0]?.file || "tag.svg",
         dolibarr_type_code:  "",
         allow_linked_events: false,
       },
@@ -169,9 +170,9 @@ export default function EditClient() {
     try {
       const cleanButtons = buttons.map(b => ({
         label:               b.label || "Sans nom",
-        bg_color:            b.bg_color  || "#2563eb",
+        bg_color:            b.bg_color   || "#2563eb",
         text_color:          b.text_color || "#ffffff",
-        icon:                b.icon || "tag.svg",   // stocke juste le nom de fichier
+        icon:                b.icon || "tag.svg",
         dolibarr_type_code:  b.dolibarr_type_code || null,
         allow_linked_events: b.allow_linked_events ? 1 : 0,
       }));
@@ -221,6 +222,16 @@ export default function EditClient() {
             ))}
           </div>
 
+          {/* ── Palette de couleurs ── */}
+          <div className="input-group" style={{ marginTop: "16px" }}>
+            <label>Palette de couleurs</label>
+            <select name="palette_id" value={form.palette_id} onChange={handleChange}>
+              {palettes.map(p => (
+                <option key={p.id} value={p.id}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+
           <hr className="divider" />
 
           <div className="buttons-config-section">
@@ -245,7 +256,7 @@ export default function EditClient() {
                     />
                   </div>
 
-                  {/* ── Icône — select dynamique, zéro code à changer ── */}
+                  {/* Icône */}
                   <div className="btn-input">
                     <label>Icône</label>
                     {iconsLoading ? (
@@ -254,7 +265,6 @@ export default function EditClient() {
                       </select>
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {/* Aperçu de l'icône sélectionnée */}
                         {btn.icon && (
                           <img
                             src={buildIconUrl(btn.icon)}
@@ -309,7 +319,9 @@ export default function EditClient() {
                       <span className="checkbox-text">Autoriser</span>
                     </label>
                   </div>
-                  <br></br>
+
+                  <br />
+
                   {/* Couleurs */}
                   <div className="btn-input tiny">
                     <label>Fond</label>
@@ -322,7 +334,7 @@ export default function EditClient() {
                       onChange={e => handleButtonChange(index, "text_color", e.target.value)} />
                   </div>
 
-                  {/* Aperçu du bouton final avec icône dynamique */}
+                  {/* Aperçu */}
                   <div className="btn-preview-mini">
                     <label>Aperçu</label>
                     <div

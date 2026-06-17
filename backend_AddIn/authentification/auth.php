@@ -12,37 +12,35 @@ if (!isset($data["email"])) {
 }
 
 $email = $data["email"];
-
-// 🔥 Extraire le domaine
 $domain = substr(strrchr($email, "@"), 1);
 
-// Chercher client par domaine
 $stmt = $conn->prepare("SELECT * FROM clients WHERE domain = ?");
 $stmt->execute([$domain]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);  // ← utiliser $user partout, pas $client
 
 if (!$user) {
-    echo json_encode(["error" => "Utilisateur non reconnu"]);
+    echo json_encode(["success" => false, "error" => "Utilisateur non reconnu"]);
     exit;
 }
 
-// 1. Générer le token interne
-$session_token = bin2hex(random_bytes(32));
+// Charger la palette
+$palettes = json_decode(file_get_contents(__DIR__ . "/../../backend_admin/palettes.json"), true);
+$palette = array_values(array_filter($palettes, fn($p) => $p['id'] === ($user['palette_id'] ?? 'default')))[0] ?? $palettes[0];
 
-// 2. MODIFICATION : Enregistrer ce token en base de données pour ce client
-// Cela permettra de vérifier l'identité du client lors des prochains appels API
+// Générer et sauvegarder le token
+$session_token = bin2hex(random_bytes(32));
 $updateStmt = $conn->prepare("UPDATE clients SET session_token = ? WHERE id = ?");
 $updateStmt->execute([$session_token, $user['id']]);
 
-// 3. Réponse SANS exposer API KEY
 echo json_encode([
     "success" => true,
+    "session_token" => $session_token,   // ← $session_token pas $sessionToken
     "message" => "Utilisateur reconnu",
     "user" => [
-        "id" => $user["id"],
-        "domain" => $user["domain"],
-        "logo" => $user["logo"]
-    ],
-    "session_token" => $session_token // On l'envoie à React pour qu'il le stocke
+        "id"      => $user['id'],
+        "domain"  => $user['domain'],
+        "logo"    => $user['logo'],
+        "palette" => $palette
+    ]
 ]);
 ?>

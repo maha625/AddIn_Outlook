@@ -87,6 +87,8 @@ body {
    ZONE 1 — HEADER
 ════════════════════════════════════════ */
 .header {
+  background: var(--header-bg, #0078d4);   /* fallback = bleu défaut */
+  color:      var(--header-text, #ffffff);
   height: var(--header-h);
   min-height: var(--header-h);
   background: var(--bg-surface);

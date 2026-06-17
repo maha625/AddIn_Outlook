@@ -19,17 +19,16 @@ if (!$data) {
 
 try {
 
-    
+
     // Calcul du domaine si vide
     $domain = !empty($data["domain"]) ? $data["domain"] : substr(strrchr($data["email"], "@"), 1);
 
     // 2. Insertion du Client uniquement
     $stmtClient = $conn->prepare("
-        INSERT INTO clients 
-        (site_number, email, dolibarr_url,  username,  dolibarr_api_key, domain, logo)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ");
-
+    INSERT INTO clients 
+    (site_number, email, dolibarr_url, username, dolibarr_api_key, domain, logo, palette_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+");
     $stmtClient->execute([
         $data["site_number"],
         $data["email"],
@@ -37,13 +36,14 @@ try {
         $data["username"],
         $data["dolibarr_api_key"],
         $domain,
-        $data["logo"]
+        $data["logo"],
+        $data["palette_id"] ?? "default"
     ]);
 
     $clientId = $conn->lastInsertId();
 
     echo json_encode([
-        "success" => true, 
+        "success" => true,
         "message" => "Client créé avec succès",
         "client_id" => $clientId
     ]);

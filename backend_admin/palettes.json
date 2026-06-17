@@ -1,0 +1,42 @@
+[
+  {
+    "id": "default",
+    "label": "Bleu Microsoft (défaut)",
+    "header_bg": "#0078d4",
+    "header_text": "#ffffff",
+    "accent": "#0078d4",
+    "bg_canvas": "#f5f5f5",
+    "btn_bg": "#0078d4",
+    "btn_text": "#ffffff"
+  },
+  {
+    "id": "dark",
+    "label": "Sombre",
+    "header_bg": "#201f1e",
+    "header_text": "#ffffff",
+    "accent": "#2b88d8",
+    "bg_canvas": "#292827",
+    "btn_bg": "#2b88d8",
+    "btn_text": "#ffffff"
+  },
+  {
+    "id": "green",
+    "label": "Vert entreprise",
+    "header_bg": "#107c10",
+    "header_text": "#ffffff",
+    "accent": "#107c10",
+    "bg_canvas": "#f5f5f5",
+    "btn_bg": "#107c10",
+    "btn_text": "#ffffff"
+  },
+  {
+    "id": "purple",
+    "label": "Violet",
+    "header_bg": "#5c2d91",
+    "header_text": "#ffffff",
+    "accent": "#5c2d91",
+    "bg_canvas": "#f5f5f5",
+    "btn_bg": "#5c2d91",
+    "btn_text": "#ffffff"
+  }
+]
