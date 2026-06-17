@@ -11,32 +11,21 @@ interface ClientButton {
   allow_linked_events: boolean;
 }
 
-const API_BASE_URL = "http://localhost/backend/backend_AddIn";
-const ICONS_BASE_URL = "http://localhost/addin_icons/cors.php";
+const API_BASE_URL = "http://localhost/backend_addin";
+const ICONS_BASE_URL = "http://localhost/icons/cors.php";
+
 // ─────────────────────────────────────────────
 //  ICÔNES
 // ─────────────────────────────────────────────
 
-/**
- * Retourne le HTML d'une icône depuis le dossier /icons/.
- * @param iconFile  - nom du fichier ex: "tag.svg" ou "telephone.png"
- * @param bgColor   - couleur hex du FOND du bouton (pour calculer le contraste)
- */
 function getIconHtml(iconFile: string | undefined, bgColor: string = "#2563eb"): string {
   if (!iconFile) {
     return `<span style="display:inline-block;width:16px;height:16px;"></span>`;
   }
   const url = `${ICONS_BASE_URL}?file=${iconFile}`;
-
-  // ── Filtre simplifié : on force l'icône en noir (brightness(0)) ──
-  // et on réduit son opacité pour l'adoucir un peu comme le fond gris.
   return `<img src="${url}" alt="" style="width:16px; height:16px; filter:brightness(0); opacity: 0.6; vertical-align:middle; flex-shrink:0;" />`;
 }
-/**
- * Calcule le filtre CSS pour coloriser une icône selon la luminance du FOND.
- * - fond clair  → icône sombre  : brightness(0)
- * - fond sombre → icône blanche : brightness(0) invert(1)
- */
+
 function getIconFilter(bgHex: string): string {
   const clean = bgHex.replace("#", "");
   if (clean.length < 6) return "brightness(0) invert(1)";
@@ -45,8 +34,8 @@ function getIconFilter(bgHex: string): string {
   const b = parseInt(clean.substring(4, 6), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5
-    ? "brightness(0)"            // fond clair  → icône sombre (visible)
-    : "brightness(0) invert(1)"; // fond sombre → icône blanche (visible)
+    ? "brightness(0)"
+    : "brightness(0) invert(1)";
 }
 
 // ─────────────────────────────────────────────
@@ -102,7 +91,7 @@ async function authenticateWithAPI(userEmail: string): Promise<string | null> {
     const data: AuthResponse = await response.json();
     if (data.success && data.session_token) {
       (window as any).__divaSessionToken = data.session_token;
-      (window as any).__divaUserEmail    = userEmail;
+      (window as any).__divaUserEmail = userEmail;
       if (data.user?.logo) displayLogoAvatar(data.user.logo);
       setStatus("ready", data.message || "Utilisateur reconnu");
       return data.session_token;
@@ -144,16 +133,15 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
     buttons.forEach((buttonData) => {
       const button = document.createElement("button");
       button.className = "action-btn";
-      button.setAttribute("type",                    "button");
-      button.setAttribute("data-label",              buttonData.label);
-      button.setAttribute("data-icon",               buttonData.icon || "tag.svg");
+      button.setAttribute("type", "button");
+      button.setAttribute("data-label", buttonData.label);
+      button.setAttribute("data-icon", buttonData.icon || "tag.svg");
       button.setAttribute("data-dolibarr-type-code", buttonData.dolibarr_type_code || "");
-      button.setAttribute("data-allow-linked",       buttonData.allow_linked_events.toString());
-      button.style.backgroundColor = buttonData.bg_color   || "#2563eb";
-      button.style.color           = buttonData.text_color || "#ffffff";
+      button.setAttribute("data-allow-linked", buttonData.allow_linked_events.toString());
+      button.style.backgroundColor = buttonData.bg_color || "#2563eb";
+      button.style.color = buttonData.text_color || "#ffffff";
       button.onclick = () => handleAction(button);
 
-      // ── Filtre calculé sur bg_color (contraste fond/icône) ──
       button.innerHTML = `
         <div class="btn-icon">${getIconHtml(buttonData.icon, buttonData.bg_color)}</div>
         <span class="btn-title">${buttonData.label || "Action"}</span>
@@ -174,14 +162,14 @@ async function loadActionButtons(sessionToken: string): Promise<void> {
 function getUserInfo(): { name: string; email: string } {
   const profile = Office.context.mailbox?.userProfile;
   return {
-    name:  profile?.displayName  || "Utilisateur",
+    name: profile?.displayName || "Utilisateur",
     email: profile?.emailAddress || "",
   };
 }
 
 function getRealUserEmail(): Promise<string> {
   return new Promise((resolve) => {
-    const profile      = Office.context.mailbox?.userProfile;
+    const profile = Office.context.mailbox?.userProfile;
     const profileEmail = profile?.emailAddress || "";
     const isTechnicalAlias = /^outlook_[A-F0-9]+@outlook\.com$/i.test(profileEmail);
 
@@ -192,7 +180,7 @@ function getRealUserEmail(): Promise<string> {
         if (result.status === Office.AsyncResultStatus.Succeeded) {
           try {
             const tokenParts = result.value.split(".");
-            const payload    = JSON.parse(atob(tokenParts[1]));
+            const payload = JSON.parse(atob(tokenParts[1]));
             resolve(payload["preferred_username"] || payload["upn"] || payload["smtp"] || profileEmail);
           } catch { resolve(profileEmail); }
         } else { resolve(profileEmail); }
@@ -206,11 +194,11 @@ function getRealUserEmail(): Promise<string> {
 function displayUser(user: { name: string; email: string }): void {
   const initials = user.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
   const avatarEl = document.getElementById("user-avatar");
-  const nameEl   = document.getElementById("user-name");
-  const emailEl  = document.getElementById("user-email");
+  const nameEl = document.getElementById("user-name");
+  const emailEl = document.getElementById("user-email");
   if (avatarEl) avatarEl.textContent = initials || "?";
-  if (nameEl)   nameEl.textContent   = user.name;
-  if (emailEl)  emailEl.textContent  = user.email;
+  if (nameEl) nameEl.textContent = user.name;
+  if (emailEl) emailEl.textContent = user.email;
 }
 
 function displayLogoAvatar(logoUrl: string): void {
@@ -232,16 +220,16 @@ function getEmailInfo(): EmailInfo | null {
   const item = Office.context.mailbox?.item;
   if (!item) return null;
   return {
-    subject:     item.subject || "(Sans objet)",
+    subject: item.subject || "(Sans objet)",
     senderEmail: (item as any).from?.emailAddress || "inconnu",
   };
 }
 
 function displayEmailInfo(email: EmailInfo): void {
   const subjectEl = document.getElementById("email-subject");
-  const senderEl  = document.getElementById("sender-email");
+  const senderEl = document.getElementById("sender-email");
   if (subjectEl) subjectEl.textContent = email.subject;
-  if (senderEl)  senderEl.textContent  = email.senderEmail;
+  if (senderEl) senderEl.textContent = email.senderEmail;
 }
 
 function displayNoEmail(): void {
@@ -261,7 +249,7 @@ interface AttachmentData {
 
 function getAttachments(): Promise<AttachmentData[]> {
   return new Promise((resolve) => {
-    const item        = Office.context.mailbox?.item;
+    const item = Office.context.mailbox?.item;
     const attachments = item?.attachments;
     if (!item || !attachments || attachments.length === 0) { resolve([]); return; }
 
@@ -276,10 +264,10 @@ function getAttachments(): Promise<AttachmentData[]> {
           item.getAttachmentContentAsync(attachment.id, (result: Office.AsyncResult<Office.AttachmentContent>) => {
             if (result.status === Office.AsyncResultStatus.Succeeded) {
               res({
-                name:        attachment.name,
-                content:     result.value.content,
+                name: attachment.name,
+                content: result.value.content,
                 contentType: attachment.contentType || "application/octet-stream",
-                size:        attachment.size,
+                size: attachment.size,
               });
             } else {
               console.warn("[Diva] PJ ignorée :", attachment.name, result.error);
@@ -324,12 +312,12 @@ async function checkSenderIsClient(
 //  ACTION — Envoi vers Dolibarr
 // ─────────────────────────────────────────────
 async function handleAction(btn: HTMLButtonElement): Promise<void> {
-  const actionLabel  = btn.getAttribute("data-label")              || "Action";
+  const actionLabel = btn.getAttribute("data-label") || "Action";
   const dolibarrType = btn.getAttribute("data-dolibarr-type-code") || null;
-  const allowLinked  = btn.getAttribute("data-allow-linked") === "1";
+  const allowLinked = btn.getAttribute("data-allow-linked") === "1";
   const sessionToken = (window as any).__divaSessionToken;
-  const emailInfo    = getEmailInfo();
-  const item         = Office.context.mailbox?.item;
+  const emailInfo = getEmailInfo();
+  const item = Office.context.mailbox?.item;
 
   if (!actionLabel || !sessionToken || !item) return;
 
@@ -344,7 +332,7 @@ async function handleAction(btn: HTMLButtonElement): Promise<void> {
     }
 
     const tiersId = tiersCheck.id || null;
-    setStatus("ready", "Client vérifié"); 
+    setStatus("ready", "Client vérifié");
 
     if (allowLinked && tiersId) {
       showSelectionModal(btn, tiersId, sessionToken);
@@ -360,53 +348,54 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
   const actionsContainer = document.getElementById("actions");
   if (!actionsContainer) return;
 
-  // ── 1. RÉCUPÉRATION DES COULEURS DU BOUTON MÈRE ──
   const parentBgColor = btn.style.backgroundColor || "#0078d4";
   const parentTextColor = btn.style.color || "#ffffff";
 
-  // 2. Injection du HTML initial avec les couleurs dynamiques du bouton mère
   actionsContainer.innerHTML = `
   <style>
+    body, html {
+      overflow: hidden !important;
+    }
     .panel-container {
-      padding: 24px 16px; 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-      color: #242424; 
+      padding: 24px 16px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #242424;
       box-sizing: border-box;
     }
 
     /* Bouton Retour */
     .btn-back {
-      border: none; 
-      background: none; 
-      color: ${parentBgColor}; /* 👈 Couleur de la mère */
-      cursor: pointer; 
-      font-size: 13px; 
-      font-weight: 600; 
-      padding: 0; 
-      margin-bottom: 24px; 
-      display: flex; 
-      align-items: center; 
-      gap: 6px; 
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       transition: all 0.2s ease;
     }
     .btn-back:hover {
-      filter: brightness(0.85); /* Assombrit légèrement au survol peu importe la couleur */
+      filter: brightness(0.85);
       transform: translateX(-2px);
     }
 
     /* Bouton Créer Principal */
     .btn-primary {
-      width: 100%; 
-      padding: 13px 20px; 
-      background: ${parentBgColor};  /* 👈 Couleur de la mère */
-      color: ${parentTextColor};   /* 👈 Couleur de texte de la mère */
-      border: none; 
-      border-radius: 6px; 
-      font-weight: 600; 
-      font-size: 14px; 
-      cursor: pointer; 
-      margin-bottom: 24px; 
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+      width: 100%;
+      padding: 13px 20px;
+      background: ${parentBgColor};
+      color: ${parentTextColor};
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
     }
     .btn-primary:hover {
@@ -419,57 +408,57 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
 
     /* Séparateur textuel */
     .divider-container {
-      display: flex; 
-      align-items: center; 
+      display: flex;
+      align-items: center;
       margin-bottom: 24px;
     }
     .divider-line {
-      flex: 1; 
+      flex: 1;
       border-bottom: 1px solid #e0e0e0;
     }
     .divider-text {
-      padding: 0 12px; 
-      color: #616161; 
-      font-size: 11px; 
-      font-weight: 600; 
-      text-transform: uppercase; 
+      padding: 0 12px;
+      color: #616161;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     /* Carte de liaison */
     .card {
-      background: #ffffff; 
-      padding: 24px; 
-      border-radius: 8px; 
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03); 
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
       border: 1px solid #e0e0e0;
     }
 
     /* Checkbox & Labels */
     .checkbox-label {
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      margin-bottom: 20px; 
-      font-size: 13px; 
-      color: #242424; 
-      cursor: pointer; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #242424;
+      cursor: pointer;
       user-select: none;
     }
     .checkbox-input {
-      width: 16px; 
-      height: 16px; 
-      accent-color: ${parentBgColor}; /* 👈 La coche prend la couleur de la mère */
-      cursor: pointer; 
-      margin: 0; 
-      border: 1px solid #8a8886; 
+      width: 16px;
+      height: 16px;
+      accent-color: ${parentBgColor};
+      cursor: pointer;
+      margin: 0;
+      border: 1px solid #8a8886;
       border-radius: 3px;
     }
     .field-label {
-      display: block; 
-      font-size: 12px; 
-      font-weight: 600; 
-      color: #424242; 
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #424242;
       margin-bottom: 8px;
     }
 
@@ -479,21 +468,21 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       margin-bottom: 24px;
     }
     .search-input {
-      width: 100%; 
-      padding: 10px 12px; 
-      border: 1px solid #adadad; 
-      border-radius: 6px; 
-      font-size: 13px; 
-      font-family: inherit; 
-      background: #ffffff; 
-      color: #242424; 
-      outline: none; 
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #adadad;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #ffffff;
+      color: #242424;
+      outline: none;
       box-sizing: border-box;
-      transition: all 0.2s ease; 
+      transition: all 0.2s ease;
       cursor: text;
     }
     .search-input:focus {
-      border-color: ${parentBgColor}; /* 👈 Bordure active de la couleur de la mère */
+      border-color: ${parentBgColor};
       box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
     }
     .search-input:disabled {
@@ -501,21 +490,24 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       cursor: not-allowed;
     }
 
-    /* Liste de résultats (Simule le Select ouvert) */
+    /* Liste de résultats — s'ouvre vers le HAUT */
     .dropdown-list {
       position: absolute;
-      top: 100%;
+      
+      bottom: 100%;
+      top: auto;
       left: 0;
       right: 0;
       background: #ffffff;
       border: 1px solid #adadad;
       border-radius: 6px;
-      max-height: 180px;
+      max-height: 220px;
       overflow-y: auto;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: none; 
-      margin-top: 4px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      margin-top: 0;
+      margin-bottom: 4px;
       padding: 0;
       list-style: none;
     }
@@ -537,20 +529,20 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
 
     /* Bouton Soumettre / Lier */
     .btn-submit {
-      width: 100%; 
-      padding: 13px; 
-      background: #f0f0f0; 
-      color: #a19f9d; 
-      border: 1px solid #e0e0e0; 
-      border-radius: 6px; 
-      font-weight: 600; 
-      font-size: 14px; 
+      width: 100%;
+      padding: 13px;
+      background: #f0f0f0;
+      color: #a19f9d;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
       cursor: not-allowed;
       transition: all 0.2s ease;
     }
     .btn-submit:not(:disabled) {
-      background: ${parentBgColor};  /* 👈 Couleur de la mère quand activé */
-      color: ${parentTextColor};   /* 👈 Couleur de texte de la mère quand activé */
+      background: ${parentBgColor};
+      color: ${parentTextColor};
       border-color: transparent;
       cursor: pointer;
     }
@@ -560,7 +552,7 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
   </style>
 
   <div class="panel-container">
-    
+
     <button onclick="location.reload()" class="btn-back">
       <span>←</span> Retour aux actions
     </button>
@@ -574,23 +566,23 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       <span class="divider-text">Ou lier à l'existant</span>
       <div class="divider-line"></div>
     </div>
-    
+
     <div class="card">
-      
+
       <label class="checkbox-label">
         <input type="checkbox" id="show-all-events" class="checkbox-input" />
         <span style="font-weight: 500;">Inclure les événements terminés</span>
       </label>
 
       <label class="field-label">Événements récents du client</label>
-      
+
       <div class="search-container">
         <input type="text" id="event-search" class="search-input" placeholder="Chargement..." autocomplete="off" disabled />
         <ul id="event-list" class="dropdown-list"></ul>
       </div>
 
       <input type="hidden" id="selected-event-id" value="" />
-      
+
       <button id="btn-link-submit" disabled class="btn-submit">
         Lier à cet événement
       </button>
@@ -599,25 +591,20 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
   </div>
 `;
 
-  // Récupération des éléments du DOM
-  const searchInput     = document.getElementById("event-search") as HTMLInputElement;
-  const eventList       = document.getElementById("event-list") as HTMLUListElement;
-  const hiddenInput     = document.getElementById("selected-event-id") as HTMLInputElement;
-  const submitBtn       = document.getElementById("btn-link-submit") as HTMLButtonElement;
+  const searchInput = document.getElementById("event-search") as HTMLInputElement;
+  const eventList = document.getElementById("event-list") as HTMLUListElement;
+  const hiddenInput = document.getElementById("selected-event-id") as HTMLInputElement;
+  const submitBtn = document.getElementById("btn-link-submit") as HTMLButtonElement;
   const checkboxShowAll = document.getElementById("show-all-events") as HTMLInputElement;
 
-  // Tableau en mémoire vive pour stocker la liste des événements reçus par l'API
   let localEventsCache: any[] = [];
 
-  // Configuration du bouton de création d'événement classique
   document.getElementById("opt-new")!.onclick = () => processCreateNewEvent(btn, tiersId);
 
-  // 3. Génération et filtrage de la liste visuelle
   function renderDropdownList(filterText: string = "") {
     eventList.innerHTML = "";
     const searchLower = filterText.toLowerCase().trim();
 
-    // Filtrage sur le titre ou la date convertie en string localisé
     const filtered = localEventsCache.filter((ev: any) => {
       const label = (ev.label || "").toLowerCase();
       const dateStr = ev.date_event ? new Date(ev.date_event).toLocaleDateString().toLowerCase() : "";
@@ -629,16 +616,14 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       return;
     }
 
-    // Création dynamique des éléments li
     filtered.forEach((ev: any) => {
       const li = document.createElement("li");
       li.className = "dropdown-item";
       const formattedDate = ev.date_event ? new Date(ev.date_event).toLocaleDateString() : 'Date inconnue';
       li.textContent = `${ev.label} (${formattedDate})`;
-      
-      // Comportement lors du clic sur un choix de la liste
+
       li.onclick = (e) => {
-        e.stopPropagation(); // Évite les conflits d'arborescence de clic
+        e.stopPropagation();
         searchInput.value = `${ev.label} (${formattedDate})`;
         hiddenInput.value = ev.id.toString();
         submitBtn.disabled = false;
@@ -648,7 +633,6 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     });
   }
 
-  // 4. Fonction isolée pour charger les données brutes depuis l'API Dolibarr
   async function loadDropdownEvents(showAll: boolean) {
     searchInput.placeholder = "Chargement...";
     searchInput.disabled = true;
@@ -662,8 +646,8 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
       const response = await fetch(`${API_BASE_URL}/evenement/getTiersEvents.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          session_token: sessionToken, 
+        body: JSON.stringify({
+          session_token: sessionToken,
           socid: tiersId,
           show_all: showAll
         }),
@@ -682,12 +666,8 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     }
   }
 
-  // 5. Premier chargement initial de la liste (par défaut décoche = false)
   await loadDropdownEvents(false);
 
-  // 6. Gestionnaires d'événements et listeners UI
-
-  // Ouvrir la liste au clic ou focus dans le champ
   searchInput.addEventListener("focus", () => {
     if (localEventsCache.length > 0) {
       renderDropdownList(searchInput.value);
@@ -695,17 +675,13 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     }
   });
 
-  // Filtrer en temps réel à chaque saisie clavier
   searchInput.addEventListener("input", () => {
-    // Si l'utilisateur modifie le texte saisi, on invalide la sélection passée
     hiddenInput.value = "";
     submitBtn.disabled = true;
-
     eventList.style.display = "block";
     renderDropdownList(searchInput.value);
   });
 
-  // Fermer le menu si l'utilisateur clique en dehors du conteneur de recherche
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
     if (!target.closest(".search-container")) {
@@ -713,14 +689,12 @@ async function showSelectionModal(btn: HTMLButtonElement, tiersId: number, sessi
     }
   });
 
-  // Écouteur de changement (change) sur la Checkbox pour recharger via API
   if (checkboxShowAll) {
     checkboxShowAll.addEventListener("change", () => {
       loadDropdownEvents(checkboxShowAll.checked);
     });
   }
 
-  // Action finale de liaison sur le clic du bouton principal
   submitBtn.onclick = () => {
     const parentId = parseInt(hiddenInput.value);
     if (!isNaN(parentId)) {
@@ -734,12 +708,12 @@ async function processCreateNewEvent(
   tiersId: number | null,
   parentId: number | null = null
 ): Promise<void> {
-  const actionLabel  = btn.getAttribute("data-label")!;
+  const actionLabel = btn.getAttribute("data-label")!;
   const dolibarrType = btn.getAttribute("data-dolibarr-type-code");
   const sessionToken = (window as any).__divaSessionToken;
-  const userEmail    = (window as any).__divaUserEmail;
-  const emailInfo    = getEmailInfo();
-  const item         = Office.context.mailbox.item;
+  const userEmail = (window as any).__divaUserEmail;
+  const emailInfo = getEmailInfo();
+  const item = Office.context.mailbox.item;
 
   if (!item) return;
 
@@ -747,16 +721,16 @@ async function processCreateNewEvent(
     if (result.status === Office.AsyncResultStatus.Succeeded) {
       const attachments = await getAttachments();
       const payload = {
-        session_token:      sessionToken,
-        user_email:         userEmail,
-        sender_email:       emailInfo?.senderEmail,
-        subject:            emailInfo?.subject,
-        email_body:         btoa(unescape(encodeURIComponent(result.value))),
-        action_label:       actionLabel,
+        session_token: sessionToken,
+        user_email: userEmail,
+        sender_email: emailInfo?.senderEmail,
+        subject: emailInfo?.subject,
+        email_body: btoa(unescape(encodeURIComponent(result.value))),
+        action_label: actionLabel,
         dolibarr_type_code: dolibarrType,
-        attachments:        attachments,
-        socid:              tiersId,
-        parent_event_id:    parentId,
+        attachments: attachments,
+        socid: tiersId,
+        parent_event_id: parentId,
       };
 
       try {
@@ -767,8 +741,12 @@ async function processCreateNewEvent(
           body: JSON.stringify(payload),
         });
         const data = await response.json();
-        if (data.success) setStatus("ready", "Événement traité !");
-        else              setStatus("error", data.error || "Échec");
+        if (data.success) {
+          setStatus("ready", "Événement traité !");
+          setTimeout(() => location.reload(), 2000); // ← retour auto après 2s
+        } else {
+          setStatus("error", data.error || "Échec");
+        }
       } catch (err) {
         setStatus("error", "Erreur réseau");
       }
@@ -779,10 +757,24 @@ async function processCreateNewEvent(
 // ─────────────────────────────────────────────
 //  UTILITAIRES
 // ─────────────────────────────────────────────
+
+// Timer global pour l'auto-effacement des statuts
+let statusTimeout: ReturnType<typeof setTimeout> | null = null;
+
 function setStatus(type: "ready" | "loading" | "error", message: string): void {
   const indicator = document.getElementById("status-indicator");
-  const text      = document.getElementById("status");
+  const text = document.getElementById("status");
   if (indicator) indicator.className = `status-indicator ${type}`;
-  if (text)      text.textContent    = message;
-}
+  if (text) text.textContent = message;
 
+  // Annule le timer précédent si un nouveau message arrive avant 3s
+  if (statusTimeout) clearTimeout(statusTimeout);
+
+  // "loading" reste affiché jusqu'à la prochaine mise à jour
+  if (type !== "loading") {
+    statusTimeout = setTimeout(() => {
+      if (indicator) indicator.className = "status-indicator";
+      if (text) text.textContent = "";
+    }, 5000);
+  }
+}
