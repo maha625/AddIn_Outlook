@@ -109,7 +109,7 @@ export default function AddClient() {
           </div>
           <div className="input-group">
             <label>Palette de couleurs</label>
-            <select name="palette_id" value={form.palette_id} onChange={handleChange}>
+            <select name="palette_id" id="select-palette" value={form.palette_id} onChange={handleChange}>
               {palettes.map(p => (
                 <option key={p.id} value={p.id}>{p.label}</option>
               ))}

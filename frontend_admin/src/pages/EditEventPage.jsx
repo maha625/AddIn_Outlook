@@ -31,7 +31,7 @@ const EditEventPage = ({ event, onCancel, onSave }) => {
                 <h3>Modifier : {event.code}</h3>
                 <form onSubmit={handleSubmit}>
                     <label>Libellé</label>
-                    <input name="libelle" value={formData.libelle} onChange={handleChange} required />
+                    <input name="libelle" id="event-libelle" value={formData.libelle} onChange={handleChange} required />
                     
                     <label>Couleur</label>
                     <input type="color" name="color" value={formData.color} onChange={handleChange} />
