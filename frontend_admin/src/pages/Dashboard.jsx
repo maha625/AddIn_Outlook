@@ -173,6 +173,14 @@ export default function Dashboard() {
               <span>+</span>
               Nouveau Client
             </button>
+            
+            <button
+              className="action-btn primary"
+              onClick={() => navigate("/add-type-evenement")}
+            >
+              <span>+</span>
+              Nouveau Type d'evenement 
+            </button>
           </div>
         </div>
       </div>
