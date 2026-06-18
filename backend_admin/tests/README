@@ -1,9 +1,3 @@
-## 🛠️ Installation du Backend
-
-### Prérequis
-- PHP 8.5+
-- [Composer](https://getcomposer.org/download/) installé globalement
-
 ### Installation
 1. Clonez le projet.
 2. Accédez au dossier : `cd backend_admin`.
@@ -11,5 +5,8 @@
 4. Installez les dépendances :
    ```bash
    composer install
-
-
+### make sure to enable SQLite in php.ini
+extension=pdo_sqlite
+5. lancer les tests :
+   ```bash
+  ./vendor/bin/phpunit      # lance les tests     

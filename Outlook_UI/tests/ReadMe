@@ -1,0 +1,28 @@
+### 🧪 Run Unit Tests
+
+* **Step 1: Navigate to the UI directory**
+```bash
+cd Outlook_UI
+
+```
+
+
+* **Step 2: Install testing dependencies**
+```bash
+npm install
+
+```
+
+
+* **Step 3: Execute the test suite**
+```bash
+npm test
+
+```
+
+
+* *(Optional) If you face cache errors, clear it with:*
+```bash
+npx jest --clearCache
+
+```

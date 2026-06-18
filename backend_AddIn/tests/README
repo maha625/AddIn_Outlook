@@ -1,0 +1,10 @@
+
+ 
+Accédez au dossier : `cd backend_AddIn`.
+
+Installez les dépendances :
+   ```bash
+
+lancer les tests :
+   ```bash
+  ./vendor/bin/phpunit      # lance les tests     
