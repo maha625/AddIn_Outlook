@@ -121,6 +121,43 @@ charge automatiquement :
 - la configuration globale
 
 ---
+# 🎨 Gestion des Palettes
+
+Les palettes de couleurs sont gérées via un fichier de configuration statique :
+
+```text
+backend_admin/palettes.json
+```
+
+## ➕ Ajouter une nouvelle palette
+
+Ouvrir le fichier :
+
+```text
+backend_admin/palettes.json
+```
+
+Ajouter une entrée selon le format suivant :
+
+```json
+{
+  "id": "mon_identifiant",
+  "label": "Nom affiché",
+  "colors": {
+    "primary": "#2563eb",
+    "secondary": "#1e40af",
+    "background": "#f0f4ff",
+    "text": "#1a1a2e"
+  }
+}
+```
+
+## ✅ Important
+
+- Aucune modification du code source requise
+- Aucune migration de base de données
+- La nouvelle palette est disponible **immédiatement** dans l'interface d'administration
+- L'API lit le fichier dynamiquement à chaque requête
 
 # 2️⃣ Backend Add-In — API Outlook
 
@@ -239,13 +276,32 @@ const ICONS_BASE_URL = "http://localhost/icons/cors.php";
 
 ```bash
 cd Outlook_UI
-
 npm install
+```
+
+### ▶️ Démarrage
+
+**Méthode 1**
+```bash
 npm start
 ```
 
----
+**Méthode 2(si la première ne marche pas) — Dans deux terminaux séparés**
 
+Terminal 1 :
+```bash
+npm run dev-server
+```
+
+Terminal 2 :
+```bash
+npx office-addin-debugging start manifest.xml
+```
+
+> 💡 La méthode 2 lance le serveur webpack dans le premier terminal,
+> puis charge automatiquement le complément dans Outlook via le second.
+
+---
 ## 🔒 Sécurité HTTPS
 
 Le serveur local Office.js utilise HTTPS automatiquement.
